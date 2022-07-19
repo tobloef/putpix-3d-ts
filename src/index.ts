@@ -87,7 +87,6 @@ function coloredTriangleTest() {
   const c1: Vector3 = [255, 0, 0];
   const c2: Vector3 = [0, 255, 0];
   const c3: Vector3 = [0, 0, 255];
-
 }
 */
 
