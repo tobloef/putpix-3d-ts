@@ -69,6 +69,7 @@ function triangleTest() {
   drawTriangleNotSoGood(p1, p2, p3, [255, 255, 255]);
 }
 
+/*
 function coloredTriangleTest() {
   const p1: Vector2 = [
     0,
@@ -88,6 +89,7 @@ function coloredTriangleTest() {
   const c3: Vector3 = [0, 0, 255];
 
 }
+*/
 
 function linesTest() {
   const pad = Math.round(imageData.width / 10);
@@ -189,6 +191,7 @@ function setPixel(
   imageData.data[i + 3] = 255;
 }
 
+/*
 function drawLineBad(
   x1: number,
   y1: number,
@@ -203,6 +206,7 @@ function drawLineBad(
     setPixel(x, y, color);
   }
 }
+*/
 
 function drawLineGood(
   p1: Vector2,
@@ -238,6 +242,7 @@ function drawLineGood(
   }
 }
 
+/*
 function drawLineGradient(
   p1: Vector2,
   p2: Vector2,
@@ -279,6 +284,7 @@ function drawLineGradient(
     }
   }
 }
+*/
 
 function drawTriangleNotSoGood(
   p1: Vector2,
