@@ -5,48 +5,54 @@ const ctx = canvas.getContext("2d")!;
 
 const rect = ctx.canvas.getBoundingClientRect();
 const dpr = window.devicePixelRatio ?? 1;
-canvas.width = Math.round(rect.width * dpr);
-canvas.height = Math.round(rect.height * dpr);
+canvas.width = Math.round(rect.width * dpr / 1);
+canvas.height = Math.round(rect.height * dpr / 1);
 ctx.scale(dpr, dpr);
 
-const blankBitmap: number[] = [];
+let t = 0;
 
-for (let y = 0; y < canvas.height; y++) {
-  for (let x = 0; x < canvas.width; x++) {
-    const i = x * 4 + y * canvas.width * 4;
-    blankBitmap[i] = 0;
-    blankBitmap[i + 1] = 0;
-    blankBitmap[i + 2] = 0;
-    blankBitmap[i + 3] = 255;
+const blackImageData = new ImageData(canvas.width, canvas.height);
+
+for (let y = 0; y < blackImageData.height; y++) {
+  for (let x = 0; x < blackImageData.width; x++) {
+    const i = x * 4 + y * blackImageData.width * 4;
+    blackImageData.data[i + 0] = 0;
+    blackImageData.data[i + 1] = 0;
+    blackImageData.data[i + 2] = 0;
+    blackImageData.data[i + 3] = 255;
   }
 }
-
-const buffer = new ImageData(Uint8ClampedArray.from(blankBitmap), canvas.width, canvas.height);
 
 function start() {
   update();
 }
 
 function update() {
-  render();
+  const imageData = new ImageData(
+    new Uint8ClampedArray(blackImageData.data),
+    blackImageData.width,
+    blackImageData.height,
+  );
+
+  render(imageData);
+
+  ctx.putImageData(imageData, 0, 0);
+
+  t++;
+
   requestAnimationFrame(update);
 }
 
-function render() {
-  let t = performance.now() / 1000;
-
-  for (let y = 0; y < buffer.height; y++) {
-    for (let x = 0; x < buffer.width; x++) {
-      const i = x * 4 + y * buffer.width * 4;
-
-      buffer.data[i] = (i + t * 200)%256;
-      buffer.data[i + 1] = 0;
-      buffer.data[i + 2] = 0;
-      buffer.data[i + 3] = 255;
+function render(imageData: ImageData) {
+  for (let y = 0; y < imageData.height; y++) {
+    for (let x = 0; x < imageData.width; x++) {
+      const i = x * 4 + y * imageData.width * 4;
+      imageData.data[i + 0] = (x + t * 5) % 256;
+      imageData.data[i + 1] = 0;
+      imageData.data[i + 2] = (y + t * 5) % 256;
+      imageData.data[i + 3] = 255;
     }
   }
-
-  ctx.putImageData(buffer, 0, 0);
 }
 
 start();
