@@ -47,8 +47,8 @@ function update() {
 
 function render() {
   perPixelTest()
-  //linesTest();
   triangleTest();
+  linesTest();
   //coloredTriangleTest();
 }
 
@@ -92,11 +92,12 @@ function coloredTriangleTest() {
 function linesTest() {
   const pad = Math.round(imageData.width / 10);
 
-  const step = 1;
+  const step = 10;
 
-  const max = imageData.width - pad;
+  const min = 0 - pad;
+  const max = imageData.width;
 
-  for (let i = 0; i < max; i += step) {
+  for (let i = min; i < max; i += step) {
     drawLineGood(
       [
         0 + i,
@@ -114,7 +115,7 @@ function linesTest() {
     );
   }
 
-  for (let i = 0; i < max; i += step) {
+  for (let i = min; i < max; i += step) {
     drawLineGood(
       [
         0 + i,
@@ -132,7 +133,7 @@ function linesTest() {
     );
   }
 
-  for (let i = 0; i < max; i += step) {
+  for (let i = min; i < max; i += step) {
     drawLineGood(
       [
         0 + i,
@@ -171,7 +172,7 @@ function setPixel(
   if (
     x < 0 ||
     y < 0 ||
-    y > imageData.height - 1 ||
+    x > imageData.width - 1 ||
     y > imageData.height - 1
   ) {
     return;
