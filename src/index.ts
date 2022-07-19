@@ -23,36 +23,48 @@ for (let y = 0; y < blackImageData.height; y++) {
   }
 }
 
+const buffer = new ImageData(canvas.width, canvas.height);
+
 function start() {
   update();
 }
 
 function update() {
-  const imageData = new ImageData(
-    new Uint8ClampedArray(blackImageData.data),
-    blackImageData.width,
-    blackImageData.height,
-  );
+  buffer.data.set(blackImageData.data);
 
-  render(imageData);
+  render();
 
-  ctx.putImageData(imageData, 0, 0);
+  ctx.putImageData(buffer, 0, 0);
 
   t++;
 
   requestAnimationFrame(update);
 }
 
-function render(imageData: ImageData) {
-  for (let y = 0; y < imageData.height; y++) {
-    for (let x = 0; x < imageData.width; x++) {
-      const i = x * 4 + y * imageData.width * 4;
-      imageData.data[i + 0] = (x + t * 5) % 256;
-      imageData.data[i + 1] = 0;
-      imageData.data[i + 2] = (y + t * 5) % 256;
-      imageData.data[i + 3] = 255;
+function render() {
+  for (let y = 0; y < buffer.height; y++) {
+    for (let x = 0; x < buffer.width; x++) {
+      const r = (x + t * 5) % 256;
+      const g = 0;
+      const b = (y + t * 5) % 256;
+
+      setPixel(x, y, r, g, b)
     }
   }
+}
+
+function setPixel(
+  x: number,
+  y: number,
+  r: number,
+  g: number,
+  b: number
+) {
+  const i = x * 4 + y * buffer.width * 4;
+  buffer.data[i + 0] = r;
+  buffer.data[i + 1] = g;
+  buffer.data[i + 2] = b;
+  buffer.data[i + 3] = 255;
 }
 
 start();
