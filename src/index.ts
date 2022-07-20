@@ -8,7 +8,7 @@ const ctx = canvas.getContext("2d")!;
 
 const rect = ctx.canvas.getBoundingClientRect();
 const dpr = window.devicePixelRatio ?? 1;
-const scale = 1 / 2;
+const scale = 1 / 4;
 canvas.width = Math.round(rect.width * dpr * scale);
 canvas.height = Math.round(rect.height * dpr * scale);
 ctx.scale(dpr, dpr);
@@ -75,49 +75,53 @@ function getRandomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-console.debug(canvas.width, canvas.height)
+function getTriangles(n: number, pad: number = 0) {
+  const triangles: [
+    [Vector2, Vector2, Vector2],
+    [Vector3, Vector3, Vector3]
+  ][] = ([...new Array(n)]).map(() => {
+    return [
+      [
+        [
+          getRandomInt(0 - pad, imageData.width + pad),
+          getRandomInt(0 - pad, imageData.height + pad),
+        ],
+        [
+          getRandomInt(0 - pad, imageData.width + pad),
+          getRandomInt(0 - pad, imageData.height + pad),
+        ],
+        [
+          getRandomInt(0 - pad, imageData.width + pad),
+          getRandomInt(0 - pad, imageData.height + pad),
+        ],
+      ],
+      [
+        [
+          getRandomInt(0, 255),
+          getRandomInt(0, 255),
+          getRandomInt(0, 255),
+        ],
+        [
+          getRandomInt(0, 255),
+          getRandomInt(0, 255),
+          getRandomInt(0, 255),
+        ],
+        [
+          getRandomInt(0, 255),
+          getRandomInt(0, 255),
+          getRandomInt(0, 255),
+        ],
+      ],
+    ]
+  });
 
-const triangles: [
-  [Vector2, Vector2, Vector2],
-  [Vector3, Vector3, Vector3]
-][] = ([...new Array(20)]).map(() => {
-  return [
-    [
-      [
-        getRandomInt(0, imageData.width),
-        getRandomInt(0, imageData.height),
-      ],
-      [
-        getRandomInt(0, imageData.width),
-        getRandomInt(0, imageData.height),
-      ],
-      [
-        getRandomInt(0, imageData.width),
-        getRandomInt(0, imageData.height),
-      ],
-    ],
-    [
-      [
-        getRandomInt(0, 255),
-        getRandomInt(0, 255),
-        getRandomInt(0, 255),
-      ],
-      [
-        getRandomInt(0, 255),
-        getRandomInt(0, 255),
-        getRandomInt(0, 255),
-      ],
-      [
-        getRandomInt(0, 255),
-        getRandomInt(0, 255),
-        getRandomInt(0, 255),
-      ],
-    ],
-  ]
-});
+  return triangles;
+}
 
+const triangles = getTriangles(20);
 
 function randomTrianglesTest() {
+
   triangles.forEach(([
     [p1, p2, p3],
     [c1, c2, c3],
