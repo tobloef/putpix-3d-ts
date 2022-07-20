@@ -8,11 +8,12 @@ const ctx = canvas.getContext("2d")!;
 
 const rect = ctx.canvas.getBoundingClientRect();
 const dpr = window.devicePixelRatio ?? 1;
-const scale = 1 / 4;
+const scale = 1 / 2;
 canvas.width = Math.round(rect.width * dpr * scale);
 canvas.height = Math.round(rect.height * dpr * scale);
 ctx.scale(dpr, dpr);
 
+// @ts-ignore
 let t = 0;
 
 const blackImageData = new ImageData(canvas.width, canvas.height);
@@ -46,12 +47,10 @@ function update() {
 }
 
 function render() {
-  perPixelTest()
-  triangleTest();
-  linesTest();
-  //coloredTriangleTest();
+  randomTrianglesTest();
 }
 
+/*
 function triangleTest() {
   const p1: Vector2 = [
     0,
@@ -68,6 +67,64 @@ function triangleTest() {
 
   drawTriangleNotSoGood(p1, p2, p3, [255, 255, 255]);
 }
+ */
+
+function getRandomInt(min: number, max: number): number {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+console.debug(canvas.width, canvas.height)
+
+const triangles: [
+  [Vector2, Vector2, Vector2],
+  [Vector3, Vector3, Vector3]
+][] = ([...new Array(20)]).map(() => {
+  return [
+    [
+      [
+        getRandomInt(0, imageData.width),
+        getRandomInt(0, imageData.height),
+      ],
+      [
+        getRandomInt(0, imageData.width),
+        getRandomInt(0, imageData.height),
+      ],
+      [
+        getRandomInt(0, imageData.width),
+        getRandomInt(0, imageData.height),
+      ],
+    ],
+    [
+      [
+        getRandomInt(0, 255),
+        getRandomInt(0, 255),
+        getRandomInt(0, 255),
+      ],
+      [
+        getRandomInt(0, 255),
+        getRandomInt(0, 255),
+        getRandomInt(0, 255),
+      ],
+      [
+        getRandomInt(0, 255),
+        getRandomInt(0, 255),
+        getRandomInt(0, 255),
+      ],
+    ],
+  ]
+});
+
+
+function randomTrianglesTest() {
+  triangles.forEach(([
+    [p1, p2, p3],
+    [c1, c2, c3],
+  ]) => {
+    drawTriangleGradient(p1, p2, p3, c1, c2, c3);
+  });
+}
 
 /*
 function coloredTriangleTest() {
@@ -81,15 +138,18 @@ function coloredTriangleTest() {
   ];
   const p3: Vector2 = [
     imageData.width - 1,
-    0,
+    Math.round(imageData.height / 2),
   ];
 
   const c1: Vector3 = [255, 0, 0];
   const c2: Vector3 = [0, 255, 0];
   const c3: Vector3 = [0, 0, 255];
-}
-*/
 
+  drawTriangleGradient(p1, p2, p3, c1, c2, c3);
+}
+ */
+
+/*
 function linesTest() {
   const pad = Math.round(imageData.width / 10);
 
@@ -153,6 +213,9 @@ function linesTest() {
   }
 }
 
+ */
+
+/*
 function perPixelTest() {
   for (let y = 0; y < imageData.height; y++) {
     for (let x = 0; x < imageData.width; x++) {
@@ -164,6 +227,8 @@ function perPixelTest() {
     }
   }
 }
+
+ */
 
 function setPixel(
   x: number,
@@ -207,6 +272,7 @@ function drawLineBad(
 }
 */
 
+/*
 function drawLineGood(
   p1: Vector2,
   p2: Vector2,
@@ -218,6 +284,7 @@ function drawLineGood(
   let y2 = p2[1];
 
   const isSteep = Math.abs(x1 - x2) < Math.abs(y1 - y2);
+
   if (isSteep) {
     // Swap x and y
     [x1, y1] = [y1, x1];
@@ -240,6 +307,56 @@ function drawLineGood(
     }
   }
 }
+ */
+
+/*
+function getLine(
+  p1: Vector2,
+  p2: Vector2,
+  c1: Vector3,
+  c2: Vector3,
+): [Vector2, Vector3][] {
+  let line: [Vector2, Vector3][] = [];
+
+  let x1 = p1[0];
+  let y1 = p1[1];
+  let x2 = p2[0];
+  let y2 = p2[1];
+
+  const isSteep = Math.abs(x1 - x2) < Math.abs(y1 - y2);
+
+  if (isSteep) {
+    // Swap x and y
+    [x1, y1] = [y1, x1];
+    [x2, y2] = [y2, x2];
+  }
+
+  if (x2 < x1) {
+    [x1, x2] = [x2, x1];
+    [y1, y2] = [y2, y1];
+  }
+
+  for (let x = x1; x <= x2; x++) {
+    const i = (x - x1) / (x2 - x1);
+    const y = Math.floor(y1 * (1 - i) + y2 * i);
+
+    const color: Vector3 = [
+      c1[0] + (c2[0] - c1[0]) * i,
+      c1[1] + (c2[1] - c1[1]) * i,
+      c1[2] + (c2[2] - c1[2]) * i,
+    ];
+
+    if (isSteep) {
+      line.push([[y, x], color]);
+    } else {
+      line.push([[x, y], color]);
+    }
+  }
+
+  return line;
+}
+
+ */
 
 /*
 function drawLineGradient(
@@ -285,6 +402,141 @@ function drawLineGradient(
 }
 */
 
+function drawTriangleGradient(
+  p1: Vector2,
+  p2: Vector2,
+  p3: Vector2,
+  c1: Vector3,
+  c2: Vector3,
+  c3: Vector3,
+) {
+  const tmp: [Vector2, Vector3][] = [
+    [p1, c1],
+    [p2, c2],
+    [p3, c3],
+  ];
+
+  const [
+    [bot, botColor],
+    [mid, midColor],
+    [top, topColor],
+  ] = tmp.sort((a, b) => a[0][1] - b[0][1]);
+
+  const totalHeight = top[1] - bot[1];
+
+  for (let y = bot[1]; y <= mid[1]; y++) {
+    const segmentHeight = mid[1] - bot[1] + 1;
+
+    const alpha = (y - bot[1]) / totalHeight;
+    const beta = (y - bot[1]) / segmentHeight;
+
+    const colorA = rgbLerp(botColor, topColor, alpha);
+    const colorB = rgbLerp(botColor, midColor, beta);
+
+    let xA = bot[0] + Math.floor((top[0] - bot[0]) * alpha);
+    let xB = bot[0] + Math.floor((mid[0] - bot[0]) * beta);
+
+    if (xA > xB) {
+      [xA, xB] = [xB, xA];
+    }
+
+    for (let x = xA; x <= xB; x++) {
+      const i = (x - xA) / (xB - xA);
+
+      const color = rgbLerp(colorA, colorB, i);
+
+      setPixel(x, y, color);
+    }
+  }
+
+  for (let y = mid[1] + 1; y <= top[1]; y++) {
+    const segmentHeight = top[1] - mid[1] + 1;
+
+    const alpha = (y - bot[1]) / totalHeight;
+    const beta = (y - mid[1]) / segmentHeight;
+
+    const colorA = rgbLerp(botColor, topColor, alpha);
+    const colorB = rgbLerp(midColor, topColor, beta);
+
+    let xA = bot[0] + Math.floor((top[0] - bot[0]) * alpha);
+    let xB = mid[0] + Math.floor((top[0] - mid[0]) * beta);
+
+    if (xA > xB) {
+      [xA, xB] = [xB, xA];
+    }
+
+    for (let x = xA; x <= xB; x++) {
+      const i = (x - xA) / (xB - xA);
+
+      const color = rgbLerp(colorA, colorB, i);
+
+      setPixel(x, y, color);
+    }
+  }
+}
+
+function rgbLerp(
+  c1: Vector3,
+  c2: Vector3,
+  i: number,
+): Vector3 {
+  return [
+    c1[0] + (c2[0] - c1[0]) * i,
+    c1[1] + (c2[1] - c1[1]) * i,
+    c1[2] + (c2[2] - c1[2]) * i,
+  ]
+}
+
+/*
+function drawTriangleBetter(
+  p1: Vector2,
+  p2: Vector2,
+  p3: Vector2,
+  color: Vector3,
+) {
+  const [top, mid, bot] = [p1, p2, p3].sort((a, b) => a[1] - b[1]);
+
+  const totalHeight = top[1] - bot[1];
+
+  for (let y = bot[1]; y <= mid[1]; y++) {
+    const segmentHeight = mid[1] - bot[1] + 1;
+
+    const alpha = (y - bot[1]) / totalHeight;
+    const beta = (y - bot[1]) / segmentHeight;
+
+    let xA = Math.floor(bot[0] + (top[0] - bot[0]) * alpha);
+    let xB = Math.floor(bot[0] + (mid[0] - bot[0]) * beta);
+
+    if (xA > xB) {
+      [xA, xB] = [xB, xA];
+    }
+
+    for (let x = xA; x <= xB; x++) {
+      setPixel(x, y, color);
+    }
+  }
+
+  for (let y = mid[1] + 1; y <= top[1]; y++) {
+    const segmentHeight = top[1] - mid[1] + 1;
+
+    const alpha = (y - bot[1]) / totalHeight;
+    const beta = (y - mid[1]) / segmentHeight;
+
+    let xA = Math.floor(bot[0] + (top[0] - bot[0]) * alpha);
+    let xB = Math.floor(mid[0] + (top[0] - mid[0]) * beta);
+
+    if (xA > xB) {
+      [xA, xB] = [xB, xA];
+    }
+
+    for (let x = xA; x <= xB; x++) {
+      setPixel(x, y, color);
+    }
+  }
+}
+
+ */
+/*
 function drawTriangleNotSoGood(
   p1: Vector2,
   p2: Vector2,
@@ -332,5 +584,6 @@ function getXForLine(
 ) {
   return Math.floor(p1[0] + ((p2[0] - p1[0]) / (p2[1] - p1[1])) * (y - p1[1]));
 }
+*/
 
 start();
