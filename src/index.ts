@@ -47,7 +47,7 @@ function update() {
 }
 
 function render() {
-  drawConnectedTriangles();
+  drawManySmallTriangles();
 }
 
 function drawConnectedTriangles() {
@@ -82,6 +82,7 @@ function drawConnectedTriangles() {
 function drawManySmallTriangles() {
   const steps = 100;
   const size = 20;
+  const count = 100;
 
   const p1: Vector2 = [
     Math.round((imageData.width / steps) * (steps / 2 - size)),
@@ -103,7 +104,7 @@ function drawManySmallTriangles() {
   const g: Vector3 = [0, 255, 0];
   const b: Vector3 = [0, 0, 255];
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < count; i++) {
     //drawTriangleVerbose(p1, p2, p3, w);
     //drawTriangleGradient(p1, p2, p3, r, g, b);
     drawTriangleSimpleButIneffective(p1, p2, p3, w);
@@ -167,7 +168,7 @@ function isPointInTriangle3(
   const s = (A[1] * C[0] - A[0] * C[1] + (C[1] - A[1]) * P[0] + (A[0] - C[0]) * P[1]) * sign;
   const t = (A[0] * B[1] - A[1] * B[0] + (A[1] - B[1]) * P[0] + (B[0] - A[0]) * P[1]) * sign;
 
-  return s > 0 && t > 0 && (s + t) < 2 * dunno * sign;
+  return s >= 0 && t >= 0 && (s + t) <= 2 * dunno * sign;
 }
 
 function isPointInTriangle4(
@@ -192,7 +193,6 @@ function triangleArea(
   B: Vector2,
   C: Vector2,
 ): number {
-  //return Math.abs((A[0] * (B[1] - C[1]) + B[0] * (C[1] - A[1]) + C[0] * (A[1] - B[1])) / 2);
   return Math.abs(
     + A[0]
     * (B[1] - C[1])
@@ -200,7 +200,7 @@ function triangleArea(
     * (C[1] - A[1])
     + C[0]
     * (A[1] - B[1])
-  );
+  ) / 2;
 }
 
 function isPointInTriangle5(
@@ -229,7 +229,7 @@ function drawTriangleSimpleButIneffective(
 
   for (let y = bbMin[1]; y < bbMax[1]; y++) {
     for (let x = bbMin[0]; x < bbMax[0]; x++) {
-      if (isPointInTriangle5([x, y], p1, p2, p3)) {
+      if (isPointInTriangle5([x, y], p3, p2, p1)) {
         setPixel(x, y, color);
       }
     }
