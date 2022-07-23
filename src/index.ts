@@ -1,4 +1,5 @@
 import "./index.css"
+import { GPU } from "gpu.js";
 
 type Vector2 = [number, number];
 type Vector3 = [number, number, number];
@@ -68,10 +69,67 @@ function render() {
   const b: Vector3 = [0, 0, 255];
 
   for (let i = 0; i < 100; i++) {
-    //drawTriangleBetter(p1, p2, p3, w);
+    drawTriangleBetter(p1, p2, p3, w);
     //drawTriangleNotSoGood(p1, p2, p3, w);
     //drawTriangleGradient(p1, p2, p3, r, g, b);
-    drawTriangleBest(p1, p2, p3, w);
+    //drawTriangleBest(p1, p2, p3, w);
+    //drawTriangleGpu(p1, p2, p3, w);
+  }
+}
+
+const gpu = new GPU();
+
+const fn = gpu.createKernel(function (
+  A: Vector2,
+  B: Vector2,
+  C: Vector2,
+): 0 | 1 {
+  const P = [this.thread.x, this.thread.y];
+
+  let s1 = (C[1] - A[1]);
+  if (s1 === 0) {
+    s1 = 1;
+  }
+
+  let s2 = (C[0] - A[0]);
+  if (s2 === 0) {
+    s2 = 1;
+  }
+
+  let s3 = (B[1] - A[1]);
+  if (s3 === 0) {
+    s3 = 1;
+  }
+
+  let s4 = (P[1] - A[1]);
+  if (s4 === 0) {
+    s4 = 1;
+  }
+
+  const w1 = (A[0] * s1 + s4 * s2 - P[0] * s1) / (s3 * s2 - (B[0] - A[0]) * s1);
+  const w2 = (s4 - w1 * s3) / s1;
+
+  return (
+    w1 >= 0 &&
+    w2 >= 0 &&
+    (w1 + w2) <= 1
+  ) ? 1 : 0;
+}).setOutput([imageData.width, imageData.height]);
+
+function drawTriangleGpu(
+  p1: Vector2,
+  p2: Vector2,
+  p3: Vector2,
+  color: Vector3,
+) {
+  const res = fn(p1, p2, p3) as number[][];
+
+  for (let y = 0; y < imageData.height; y++) {
+    for (let x = 0; x < imageData.width; x++) {
+      if (res[y]?.[x]) {
+        setPixel(x, y, color);
+      }
+    }
   }
 }
 
