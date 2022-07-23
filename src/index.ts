@@ -1,5 +1,4 @@
 import "./index.css"
-import { GPU } from "gpu.js";
 
 type Vector2 = [number, number];
 type Vector3 = [number, number, number];
@@ -48,19 +47,55 @@ function update() {
 }
 
 function render() {
+  drawConnectedTriangles();
+}
+
+function drawConnectedTriangles() {
+  const space = 0;
+
+  drawTriangleSimpleButIneffective(
+    [100, 100 - space],
+    [200, 200 - space],
+    [300, 100 - space],
+    [255 / 4 * 1, 0, 0],
+  );
+  drawTriangleSimpleButIneffective(
+    [300 + space, 300],
+    [200 + space, 200],
+    [300 + space, 100],
+    [255 / 4 * 2, 0, 0],
+  );
+  drawTriangleSimpleButIneffective(
+    [100, 300 + space],
+    [200, 200 + space],
+    [300, 300 + space],
+    [255 / 4 * 3, 0, 0],
+  );
+  drawTriangleSimpleButIneffective(
+    [100 - space, 300],
+    [200 - space, 200],
+    [100 - space, 100],
+    [255 / 4 * 4, 0, 0],
+  );
+}
+
+function drawManySmallTriangles() {
+  const steps = 100;
+  const size = 20;
+
   const p1: Vector2 = [
-    0,
-    0,
+    Math.round((imageData.width / steps) * (steps / 2 - size)),
+    Math.round((imageData.height / steps) * (steps / 2 - size)),
   ];
 
   const p2: Vector2 = [
-    Math.round(imageData.width / 2),
-    imageData.height - 1,
+    Math.round((imageData.width / steps) * (steps / 2)),
+    Math.round((imageData.height / steps) * (steps / 2 + size)),
   ];
 
   const p3: Vector2 = [
-    imageData.width - 1,
-    0,
+    Math.round((imageData.width / steps) * (steps / 2 + size)),
+    Math.round((imageData.height / steps) * (steps / 2 - size)),
   ];
 
   const w: Vector3 = [255, 255, 255];
@@ -69,80 +104,22 @@ function render() {
   const b: Vector3 = [0, 0, 255];
 
   for (let i = 0; i < 100; i++) {
-    drawTriangleBetter(p1, p2, p3, w);
-    //drawTriangleNotSoGood(p1, p2, p3, w);
+    //drawTriangleVerbose(p1, p2, p3, w);
     //drawTriangleGradient(p1, p2, p3, r, g, b);
-    //drawTriangleBest(p1, p2, p3, w);
-    //drawTriangleGpu(p1, p2, p3, w);
+    drawTriangleSimpleButIneffective(p1, p2, p3, w);
   }
 }
 
-const gpu = new GPU();
-
-const fn = gpu.createKernel(function (
-  A: Vector2,
-  B: Vector2,
-  C: Vector2,
-): 0 | 1 {
-  const P = [this.thread.x, this.thread.y];
-
-  let s1 = (C[1] - A[1]);
-  if (s1 === 0) {
-    s1 = 1;
-  }
-
-  let s2 = (C[0] - A[0]);
-  if (s2 === 0) {
-    s2 = 1;
-  }
-
-  let s3 = (B[1] - A[1]);
-  if (s3 === 0) {
-    s3 = 1;
-  }
-
-  let s4 = (P[1] - A[1]);
-  if (s4 === 0) {
-    s4 = 1;
-  }
-
-  const w1 = (A[0] * s1 + s4 * s2 - P[0] * s1) / (s3 * s2 - (B[0] - A[0]) * s1);
-  const w2 = (s4 - w1 * s3) / s1;
-
-  return (
-    w1 >= 0 &&
-    w2 >= 0 &&
-    (w1 + w2) <= 1
-  ) ? 1 : 0;
-}).setOutput([imageData.width, imageData.height]);
-
-function drawTriangleGpu(
-  p1: Vector2,
-  p2: Vector2,
-  p3: Vector2,
-  color: Vector3,
-) {
-  const res = fn(p1, p2, p3) as number[][];
-
-  for (let y = 0; y < imageData.height; y++) {
-    for (let x = 0; x < imageData.width; x++) {
-      if (res[y]?.[x]) {
-        setPixel(x, y, color);
-      }
-    }
-  }
-}
-
-function isPointInTriangle(
+function isPointInTriangle1(
   P: Vector2,
   A: Vector2,
   B: Vector2,
   C: Vector2,
 ): boolean {
-  const s1 = (C[1] - A[1]) || 1;
-  const s2 = (C[0] - A[0]) || 1;
-  const s3 = (B[1] - A[1]) || 1;
-  const s4 = (P[1] - A[1]) || 1;
+  const s1 = (C[1] - A[1]) || 0.00001;
+  const s2 = (C[0] - A[0]) || 0.00001;
+  const s3 = (B[1] - A[1]) || 0.00001;
+  const s4 = (P[1] - A[1]) || 0.00001;
 
   const w1 = (A[0] * s1 + s4 * s2 - P[0] * s1) / (s3 * s2 - (B[0] - A[0]) * s1);
   const w2 = (s4 - w1 * s3) / s1;
@@ -154,36 +131,144 @@ function isPointInTriangle(
   );
 }
 
-function drawTriangleBest(
+// Barycentric version, afaik
+function isPointInTriangle2(
+  P: Vector2,
+  A: Vector2,
+  B: Vector2,
+  C: Vector2,
+) {
+  const v0 = [C[0] - A[0], C[1] - A[1]];
+  const v1 = [B[0] - A[0], B[1] - A[1]];
+  const v2 = [P[0] - A[0], P[1] - A[1]];
+
+  const dot00 = (v0[0] * v0[0]) + (v0[1] * v0[1]);
+  const dot01 = (v0[0] * v1[0]) + (v0[1] * v1[1]);
+  const dot02 = (v0[0] * v2[0]) + (v0[1] * v2[1]);
+  const dot11 = (v1[0] * v1[0]) + (v1[1] * v1[1]);
+  const dot12 = (v1[0] * v2[0]) + (v1[1] * v2[1]);
+
+  const invDenom = 1 / (dot00 * dot11 - dot01 * dot01);
+
+  const u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+  const v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+
+  return ((u >= 0) && (v >= 0) && (u + v <= 1));
+}
+
+function isPointInTriangle3(
+  P: Vector2,
+  A: Vector2,
+  B: Vector2,
+  C: Vector2,
+) {
+  const dunno = 1 / 2 * (-B[1] * C[0] + A[1] * (-B[0] + C[0]) + A[0] * (B[1] - C[1]) + B[0] * C[1]);
+  const sign = dunno < 0 ? -1 : 1;
+  const s = (A[1] * C[0] - A[0] * C[1] + (C[1] - A[1]) * P[0] + (A[0] - C[0]) * P[1]) * sign;
+  const t = (A[0] * B[1] - A[1] * B[0] + (A[1] - B[1]) * P[0] + (B[0] - A[0]) * P[1]) * sign;
+
+  return s > 0 && t > 0 && (s + t) < 2 * dunno * sign;
+}
+
+function isPointInTriangle4(
+  P: Vector2,
+  A: Vector2,
+  B: Vector2,
+  C: Vector2,
+) {
+  const s = (A[0] - C[0]) * (P[1] - C[1]) - (A[1] - C[1]) * (P[0] - C[0]);
+  const t = (B[0] - A[0]) * (P[1] - A[1]) - (B[1] - A[1]) * (P[0] - A[0]);
+
+  if ((s < 0) != (t < 0) && s != 0 && t != 0) {
+    return false;
+  }
+
+  const d = (C[0] - B[0]) * (P[1] - B[1]) - (C[1] - B[1]) * (P[0] - B[0]);
+  return d == 0 || (d < 0) == (s + t <= 0);
+}
+
+function triangleArea(
+  A: Vector2,
+  B: Vector2,
+  C: Vector2,
+): number {
+  //return Math.abs((A[0] * (B[1] - C[1]) + B[0] * (C[1] - A[1]) + C[0] * (A[1] - B[1])) / 2);
+  return Math.abs(
+    + A[0]
+    * (B[1] - C[1])
+    + B[0]
+    * (C[1] - A[1])
+    + C[0]
+    * (A[1] - B[1])
+  );
+}
+
+function isPointInTriangle5(
+  P: Vector2,
+  A: Vector2,
+  B: Vector2,
+  C: Vector2,
+) {
+  const areaABC = triangleArea(A, B, C);
+  const areaPBC = triangleArea(P, B, C);
+  const areaAPC = triangleArea(A, P, C);
+  const areaABP = triangleArea(A, B, P);
+
+  const margin = 0.0001;
+
+  return Math.abs(areaABC - (areaPBC + areaAPC + areaABP)) <= margin;
+}
+
+function drawTriangleSimpleButIneffective(
   p1: Vector2,
   p2: Vector2,
   p3: Vector2,
   color: Vector3,
 ) {
-  for (let y = 0; y < imageData.height; y++) {
-    for (let x = 0; x < imageData.width; x++) {
-      if (isPointInTriangle([x, y], p1, p2, p3)) {
+  const [bbMin, bbMax] = getTriangleBb(p1, p2, p3);
+
+  for (let y = bbMin[1]; y < bbMax[1]; y++) {
+    for (let x = bbMin[0]; x < bbMax[0]; x++) {
+      if (isPointInTriangle5([x, y], p1, p2, p3)) {
         setPixel(x, y, color);
       }
     }
   }
 }
 
-function triangleTest() {
-  const p1: Vector2 = [
-    0,
-    0,
-  ];
-  const p2: Vector2 = [
-    Math.round(imageData.width / 2),
-    imageData.height - 1,
-  ];
-  const p3: Vector2 = [
-    imageData.width - 1,
-    Math.round(imageData.height / 2),
-  ];
+function getTriangleBb(
+  p1: Vector2,
+  p2: Vector2,
+  p3: Vector2,
+): [Vector2, Vector2] {
+  let bbMin: Vector2 = [+Infinity, +Infinity];
+  let bbMax: Vector2 = [-Infinity, -Infinity];
 
-  drawTriangleNotSoGood(p1, p2, p3, [255, 255, 255]);
+  for (const p of [p1, p2, p3]) {
+    if (p[0] < bbMin[0]) {
+      bbMin[0] = p[0]
+    }
+    if (p[1] < bbMin[1]) {
+      bbMin[1] = p[1]
+    }
+    if (p[0] > bbMax[0]) {
+      bbMax[0] = p[0]
+    }
+    if (p[1] > bbMax[1]) {
+      bbMax[1] = p[1]
+    }
+  }
+
+  return [
+    [
+      Math.floor(bbMin[0]),
+      Math.floor(bbMin[1]),
+    ],
+    [
+      Math.ceil(bbMax[0]),
+      Math.ceil(bbMax[1]),
+    ],
+  ]
 }
 
 function getRandomInt(min: number, max: number): number {
@@ -347,21 +432,18 @@ function setPixel(
   x: number,
   y: number,
   color: Vector3,
-  doChecks = false,
 ) {
-  if (doChecks) {
-    if (
-      x < 0 ||
-      y < 0 ||
-      x > imageData.width - 1 ||
-      y > imageData.height - 1
-    ) {
-      return;
-    }
-
-    x = Math.floor(x);
-    y = Math.floor(y);
+  if (
+    x < 0 ||
+    y < 0 ||
+    x > imageData.width - 1 ||
+    y > imageData.height - 1
+  ) {
+    return;
   }
+
+  x = Math.floor(x);
+  y = Math.floor(y);
 
   const offset = x * 4 + ((imageData.height - 1) - y) * imageData.width * 4;
 
@@ -594,7 +676,7 @@ function rgbLerp(
   ]
 }
 
-function drawTriangleBetter(
+function drawTriangleVerbose(
   p1: Vector2,
   p2: Vector2,
   p3: Vector2,
@@ -610,8 +692,8 @@ function drawTriangleBetter(
     const alpha = (y - bot[1]) / totalHeight;
     const beta = (y - bot[1]) / segmentHeight;
 
-    let xA = bot[0] + Math.floor((top[0] - bot[0]) * alpha);
-    let xB = bot[0] + Math.floor((mid[0] - bot[0]) * beta);
+    let xA = Math.round(bot[0] + (top[0] - bot[0]) * alpha);
+    let xB = Math.round(bot[0] + (mid[0] - bot[0]) * beta);
 
     if (xA > xB) {
       [xA, xB] = [xB, xA];
@@ -628,8 +710,8 @@ function drawTriangleBetter(
     const alpha = (y - bot[1]) / totalHeight;
     const beta = (y - mid[1]) / segmentHeight;
 
-    let xA = bot[0] + Math.floor((top[0] - bot[0]) * alpha);
-    let xB = mid[0] + Math.floor((top[0] - mid[0]) * beta);
+    let xA = Math.round(bot[0] + (top[0] - bot[0]) * alpha);
+    let xB = Math.round(mid[0] + (top[0] - mid[0]) * beta);
 
     if (xA > xB) {
       [xA, xB] = [xB, xA];
@@ -639,54 +721,6 @@ function drawTriangleBetter(
       setPixel(x, y, color);
     }
   }
-}
-
-function drawTriangleNotSoGood(
-  p1: Vector2,
-  p2: Vector2,
-  p3: Vector2,
-  color: Vector3,
-) {
-  const [bot, mid, top] = [p1, p2, p3].sort((a, b) => a[1] - b[1]);
-
-  let leftX: number;
-  let rightX: number;
-
-  for (let y = bot[1]; y <= top[1]; y++) {
-    if (y <= mid[1]) {
-      const leftmost = mid[0] < top[0] ? mid : top;
-      const rightmost = mid[0] > top[0] ? mid : top;
-
-      leftX = bot[1] === leftmost[1]
-        ? leftmost[0]
-        : getXForLine(y, bot, leftmost);
-      rightX = bot[1] === rightmost[1]
-        ? rightmost[0]
-        : getXForLine(y, bot, rightmost);
-    } else {
-      const leftmost = mid[0] < bot[0] ? mid : bot;
-      const rightmost = mid[0] > bot[0] ? mid : bot;
-
-      leftX = top[1] === leftmost[1]
-        ? leftmost[0]
-        : getXForLine(y, top, leftmost);
-      rightX = top[1] === rightmost[1]
-        ? rightmost[0]
-        : getXForLine(y, top, rightmost);
-    }
-
-    for (let x = leftX; x <= rightX; x++) {
-      setPixel(x, y, color);
-    }
-  }
-}
-
-function getXForLine(
-  y: number,
-  p1: Vector2,
-  p2: Vector2,
-) {
-  return Math.floor(p1[0] + ((p2[0] - p1[0]) / (p2[1] - p1[1])) * (y - p1[1]));
 }
 
 start();
