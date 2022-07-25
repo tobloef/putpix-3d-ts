@@ -8,7 +8,7 @@ const ctx = canvas.getContext("2d")!;
 
 const rect = ctx.canvas.getBoundingClientRect();
 const dpr = window.devicePixelRatio ?? 1;
-const scale = 1 / 1;
+const scale = 1 / 5;
 canvas.width = Math.round(rect.width * dpr * scale);
 canvas.height = Math.round(rect.height * dpr * scale);
 ctx.scale(dpr, dpr);
@@ -130,6 +130,7 @@ function isPointInTriangle(
   return [isIn, [proportionA, proportionB, proportionC]];
 }
 
+// @ts-ignore
 function drawFilledTriangle(
   p1: Vector2,
   p2: Vector2,
@@ -169,6 +170,7 @@ function drawFilledTriangle(
   }
 }
 
+// @ts-ignore
 function drawWireframeTriangle(
   p1: Vector2,
   p2: Vector2,
