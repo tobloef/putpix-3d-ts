@@ -69,11 +69,11 @@ function isPointInTriangle(
 
   const isIn = Math.abs(areaABC - (areaPBC + areaAPC + areaABP)) <= margin;
 
-  const areaA = areaABP / areaABC;
-  const areaB = areaAPC / areaABC;
-  const areaC = areaPBC / areaABC;
+  const proportionA = areaABP / areaABC;
+  const proportionB = areaAPC / areaABC;
+  const proportionC = areaPBC / areaABC;
 
-  return [isIn, [areaA, areaB, areaC]];
+  return [isIn, [proportionA, proportionB, proportionC]];
 }
 
 function drawFilledTriangle(
