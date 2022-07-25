@@ -17,18 +17,19 @@ ctx.scale(dpr, dpr);
 let t = 0;
 
 const blackImageData = new ImageData(canvas.width, canvas.height);
-
 const imageData = new ImageData(canvas.width, canvas.height);
 
-const viewportSize = 1;
+const fov = 1.5;
+const viewportSizeX = 1 * fov;
+const viewportSizeY = (imageData.height / imageData.width) * fov;
 const projectionPlaneZ = 1;
 
 function project(p: Vector3): Vector2 {
   const ppy = (p[1] * projectionPlaneZ) / p[2];
   const ppx = (p[0] * projectionPlaneZ) / p[2];
 
-  const cx = (ppx * imageData.width) / viewportSize + imageData.width / 2;
-  const cy = (ppy * imageData.height) / viewportSize + imageData.height / 2;
+  const cx = (ppx * imageData.width) / viewportSizeX + imageData.width / 2;
+  const cy = (ppy * imageData.height) / viewportSizeY + imageData.height / 2;
 
   return [cx, cy];
 }
@@ -64,11 +65,6 @@ function render() {
     var vCb: Vector3 = [-4 + 1 + ((t / 100 + 4) % 8), 0.5 - 1, 6];
     var vDb: Vector3 = [-4 + 1 + ((t / 100 + 4) % 8), -0.5 - 1, 6];
 
-    drawLine(project(vA), project(vB), blue);
-    drawLine(project(vB), project(vC), blue);
-    drawLine(project(vC), project(vD), blue);
-    drawLine(project(vD), project(vA), blue);
-
     drawLine(project(vAb), project(vBb), red);
     drawLine(project(vBb), project(vCb), red);
     drawLine(project(vCb), project(vDb), red);
@@ -78,6 +74,11 @@ function render() {
     drawLine(project(vB), project(vBb), green);
     drawLine(project(vC), project(vCb), green);
     drawLine(project(vD), project(vDb), green);
+
+    drawLine(project(vA), project(vB), blue);
+    drawLine(project(vB), project(vC), blue);
+    drawLine(project(vC), project(vD), blue);
+    drawLine(project(vD), project(vA), blue);
   }
 
   {
