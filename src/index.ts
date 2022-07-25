@@ -20,6 +20,21 @@ const blackImageData = new ImageData(canvas.width, canvas.height);
 
 const imageData = new ImageData(canvas.width, canvas.height);
 
+const viewportSize = 1;
+const projectionPlaneZ = 1;
+
+function project(p: Vector3): Vector2 {
+  const ppy = (p[1] * projectionPlaneZ) / p[2];
+  const ppx = (p[0] * projectionPlaneZ) / p[2];
+
+  const cx = (ppx * imageData.width) / viewportSize + imageData.width / 2;
+  const cy = (ppy * imageData.height) / viewportSize + imageData.height / 2;
+
+  console.debug(p, ppx, ppy, cx, cy);
+
+  return [cx, cy];
+}
+
 function start() {
   update();
 }
@@ -37,21 +52,34 @@ function update() {
 }
 
 function render() {
-  drawFilledTriangle(
-    [canvas.width / 2, 0],
-    [0, canvas.height / 2],
-    [canvas.width, canvas.height],
-    [255, 0, 0],
-    [0, 255, 0],
-    [0, 0, 255]
-  );
+  var vA: Vector3 = [-2, -0.5, 5];
+  var vB: Vector3 = [-2, 0.5, 5];
+  var vC: Vector3 = [-1, 0.5, 5];
+  var vD: Vector3 = [-1, -0.5, 5];
 
-  drawWireframeTriangle(
-    [canvas.width / 2, 0],
-    [0, canvas.height / 2],
-    [canvas.width, canvas.height],
-    [255, 255, 255]
-  );
+  var vAb: Vector3 = [-2, -0.5, 6];
+  var vBb: Vector3 = [-2, 0.5, 6];
+  var vCb: Vector3 = [-1, 0.5, 6];
+  var vDb: Vector3 = [-1, -0.5, 6];
+
+  var red: Vector3 = [255, 0, 0];
+  var green: Vector3 = [0, 255, 0];
+  var blue: Vector3 = [0, 0, 255];
+
+  drawLine(project(vA), project(vB), blue);
+  drawLine(project(vB), project(vC), blue);
+  drawLine(project(vC), project(vD), blue);
+  drawLine(project(vD), project(vA), blue);
+
+  drawLine(project(vAb), project(vBb), red);
+  drawLine(project(vBb), project(vCb), red);
+  drawLine(project(vCb), project(vDb), red);
+  drawLine(project(vDb), project(vAb), red);
+
+  drawLine(project(vA), project(vAb), green);
+  drawLine(project(vB), project(vBb), green);
+  drawLine(project(vC), project(vCb), green);
+  drawLine(project(vD), project(vDb), green);
 }
 
 function isPointInTriangle(
