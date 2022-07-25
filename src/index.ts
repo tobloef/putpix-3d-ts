@@ -56,14 +56,14 @@ function render() {
   var blue: Vector3 = [0, 0, 255];
 
   {
-    var vA: Vector3 = [-5 + 1 + ((t / 100 + 4) % 8), -0.5 - 1, 5];
-    var vB: Vector3 = [-5 + 1 + ((t / 100 + 4) % 8), 0.5 - 1, 5];
-    var vC: Vector3 = [-4 + 1 + ((t / 100 + 4) % 8), 0.5 - 1, 5];
-    var vD: Vector3 = [-4 + 1 + ((t / 100 + 4) % 8), -0.5 - 1, 5];
-    var vAb: Vector3 = [-5 + 1 + ((t / 100 + 4) % 8), -0.5 - 1, 6];
-    var vBb: Vector3 = [-5 + 1 + ((t / 100 + 4) % 8), 0.5 - 1, 6];
-    var vCb: Vector3 = [-4 + 1 + ((t / 100 + 4) % 8), 0.5 - 1, 6];
-    var vDb: Vector3 = [-4 + 1 + ((t / 100 + 4) % 8), -0.5 - 1, 6];
+    var vA: Vector3 = [-5 + -1 + ((t / 100 + 5) % 11), -0.5 - 1, 5];
+    var vB: Vector3 = [-5 + -1 + ((t / 100 + 5) % 11), 0.5 - 1, 5];
+    var vC: Vector3 = [-4 + -1 + ((t / 100 + 5) % 11), 0.5 - 1, 5];
+    var vD: Vector3 = [-4 + -1 + ((t / 100 + 5) % 11), -0.5 - 1, 5];
+    var vAb: Vector3 = [-5 + -1 + ((t / 100 + 5) % 11), -0.5 - 1, 6];
+    var vBb: Vector3 = [-5 + -1 + ((t / 100 + 5) % 11), 0.5 - 1, 6];
+    var vCb: Vector3 = [-4 + -1 + ((t / 100 + 5) % 11), 0.5 - 1, 6];
+    var vDb: Vector3 = [-4 + -1 + ((t / 100 + 5) % 11), -0.5 - 1, 6];
 
     drawLine(project(vAb), project(vBb), red);
     drawLine(project(vBb), project(vCb), red);
@@ -82,14 +82,14 @@ function render() {
   }
 
   {
-    var vA: Vector3 = [-5 + 1 + ((t / 100) % 8), -0.5 + 1, 5];
-    var vB: Vector3 = [-5 + 1 + ((t / 100) % 8), 0.5 + 1, 5];
-    var vC: Vector3 = [-4 + 1 + ((t / 100) % 8), 0.5 + 1, 5];
-    var vD: Vector3 = [-4 + 1 + ((t / 100) % 8), -0.5 + 1, 5];
-    var vAb: Vector3 = [-5 + 1 + ((t / 100) % 8), -0.5 + 1, 6];
-    var vBb: Vector3 = [-5 + 1 + ((t / 100) % 8), 0.5 + 1, 6];
-    var vCb: Vector3 = [-4 + 1 + ((t / 100) % 8), 0.5 + 1, 6];
-    var vDb: Vector3 = [-4 + 1 + ((t / 100) % 8), -0.5 + 1, 6];
+    var vA: Vector3 = [-5 + -1 + ((t / 100) % 11), -0.5 + 1, 5];
+    var vB: Vector3 = [-5 + -1 + ((t / 100) % 11), 0.5 + 1, 5];
+    var vC: Vector3 = [-4 + -1 + ((t / 100) % 11), 0.5 + 1, 5];
+    var vD: Vector3 = [-4 + -1 + ((t / 100) % 11), -0.5 + 1, 5];
+    var vAb: Vector3 = [-5 + -1 + ((t / 100) % 11), -0.5 + 1, 6];
+    var vBb: Vector3 = [-5 + -1 + ((t / 100) % 11), 0.5 + 1, 6];
+    var vCb: Vector3 = [-4 + -1 + ((t / 100) % 11), 0.5 + 1, 6];
+    var vDb: Vector3 = [-4 + -1 + ((t / 100) % 11), -0.5 + 1, 6];
 
     drawLine(project(vA), project(vB), blue);
     drawLine(project(vB), project(vC), blue);
