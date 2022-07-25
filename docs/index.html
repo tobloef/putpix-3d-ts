@@ -1,14 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>3D</title>
-    <script type="module" crossorigin src="./assets/index.15ee61ed.js"></script>
-    <link rel="stylesheet" href="./assets/index.9ed50292.css">
-  </head>
-  <body>
-    <canvas></canvas>
-    
-  </body>
+<head>
+	<meta charset="UTF-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	<title>3D</title>
+  <script type="module" crossorigin src="./assets/index.fb2b51ed.js"></script>
+  <link rel="stylesheet" href="./assets/index.5c9e692d.css">
+</head>
+<body>
+<canvas></canvas>
+
+<script>
+	// https://github.com/mrdoob/stats.js/
+	(function () {
+		var script = document.createElement('script');
+		script.onload = function () {
+			var stats = new Stats();
+			document.body.appendChild(stats.dom);
+			requestAnimationFrame(function loop() {
+				stats.update();
+				requestAnimationFrame(loop)
+			});
+		};
+		script.src = '//mrdoob.github.io/stats.js/build/stats.min.js';
+		document.head.appendChild(script);
+	})()
+</script>
+</body>
 </html>
