@@ -30,8 +30,6 @@ function project(p: Vector3): Vector2 {
   const cx = (ppx * imageData.width) / viewportSize + imageData.width / 2;
   const cy = (ppy * imageData.height) / viewportSize + imageData.height / 2;
 
-  console.debug(p, ppx, ppy, cx, cy);
-
   return [cx, cy];
 }
 
