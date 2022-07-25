@@ -8,7 +8,7 @@ const ctx = canvas.getContext("2d")!;
 
 const rect = ctx.canvas.getBoundingClientRect();
 const dpr = window.devicePixelRatio ?? 1;
-const scale = 1 / 4;
+const scale = 1 / 1;
 canvas.width = Math.round(rect.width * dpr * scale);
 canvas.height = Math.round(rect.height * dpr * scale);
 ctx.scale(dpr, dpr);
@@ -50,34 +50,61 @@ function update() {
 }
 
 function render() {
-  var vA: Vector3 = [-2, -0.5, 5];
-  var vB: Vector3 = [-2, 0.5, 5];
-  var vC: Vector3 = [-1, 0.5, 5];
-  var vD: Vector3 = [-1, -0.5, 5];
-
-  var vAb: Vector3 = [-2, -0.5, 6];
-  var vBb: Vector3 = [-2, 0.5, 6];
-  var vCb: Vector3 = [-1, 0.5, 6];
-  var vDb: Vector3 = [-1, -0.5, 6];
-
   var red: Vector3 = [255, 0, 0];
   var green: Vector3 = [0, 255, 0];
   var blue: Vector3 = [0, 0, 255];
 
-  drawLine(project(vA), project(vB), blue);
-  drawLine(project(vB), project(vC), blue);
-  drawLine(project(vC), project(vD), blue);
-  drawLine(project(vD), project(vA), blue);
+  {
+    var vA: Vector3 = [-5 + 1 + ((t / 100 + 4) % 8), -0.5 - 1, 5];
+    var vB: Vector3 = [-5 + 1 + ((t / 100 + 4) % 8), 0.5 - 1, 5];
+    var vC: Vector3 = [-4 + 1 + ((t / 100 + 4) % 8), 0.5 - 1, 5];
+    var vD: Vector3 = [-4 + 1 + ((t / 100 + 4) % 8), -0.5 - 1, 5];
+    var vAb: Vector3 = [-5 + 1 + ((t / 100 + 4) % 8), -0.5 - 1, 6];
+    var vBb: Vector3 = [-5 + 1 + ((t / 100 + 4) % 8), 0.5 - 1, 6];
+    var vCb: Vector3 = [-4 + 1 + ((t / 100 + 4) % 8), 0.5 - 1, 6];
+    var vDb: Vector3 = [-4 + 1 + ((t / 100 + 4) % 8), -0.5 - 1, 6];
 
-  drawLine(project(vAb), project(vBb), red);
-  drawLine(project(vBb), project(vCb), red);
-  drawLine(project(vCb), project(vDb), red);
-  drawLine(project(vDb), project(vAb), red);
+    drawLine(project(vA), project(vB), blue);
+    drawLine(project(vB), project(vC), blue);
+    drawLine(project(vC), project(vD), blue);
+    drawLine(project(vD), project(vA), blue);
 
-  drawLine(project(vA), project(vAb), green);
-  drawLine(project(vB), project(vBb), green);
-  drawLine(project(vC), project(vCb), green);
-  drawLine(project(vD), project(vDb), green);
+    drawLine(project(vAb), project(vBb), red);
+    drawLine(project(vBb), project(vCb), red);
+    drawLine(project(vCb), project(vDb), red);
+    drawLine(project(vDb), project(vAb), red);
+
+    drawLine(project(vA), project(vAb), green);
+    drawLine(project(vB), project(vBb), green);
+    drawLine(project(vC), project(vCb), green);
+    drawLine(project(vD), project(vDb), green);
+  }
+
+  {
+    var vA: Vector3 = [-5 + 1 + ((t / 100) % 8), -0.5 + 1, 5];
+    var vB: Vector3 = [-5 + 1 + ((t / 100) % 8), 0.5 + 1, 5];
+    var vC: Vector3 = [-4 + 1 + ((t / 100) % 8), 0.5 + 1, 5];
+    var vD: Vector3 = [-4 + 1 + ((t / 100) % 8), -0.5 + 1, 5];
+    var vAb: Vector3 = [-5 + 1 + ((t / 100) % 8), -0.5 + 1, 6];
+    var vBb: Vector3 = [-5 + 1 + ((t / 100) % 8), 0.5 + 1, 6];
+    var vCb: Vector3 = [-4 + 1 + ((t / 100) % 8), 0.5 + 1, 6];
+    var vDb: Vector3 = [-4 + 1 + ((t / 100) % 8), -0.5 + 1, 6];
+
+    drawLine(project(vA), project(vB), blue);
+    drawLine(project(vB), project(vC), blue);
+    drawLine(project(vC), project(vD), blue);
+    drawLine(project(vD), project(vA), blue);
+
+    drawLine(project(vAb), project(vBb), red);
+    drawLine(project(vBb), project(vCb), red);
+    drawLine(project(vCb), project(vDb), red);
+    drawLine(project(vDb), project(vAb), red);
+
+    drawLine(project(vA), project(vAb), green);
+    drawLine(project(vB), project(vBb), green);
+    drawLine(project(vC), project(vCb), green);
+    drawLine(project(vD), project(vDb), green);
+  }
 }
 
 function isPointInTriangle(
