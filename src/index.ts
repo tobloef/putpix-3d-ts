@@ -162,13 +162,13 @@ function rotate(verts: Vector3[], rotation: Vector3): Vector3[] {
 function render() {
   const scene: Scene = [
     {
-      translation: [0.5 + Math.sin(t / 20) * 2, 2, 7],
+      translation: [0.5 + Math.sin(t / 20) * 2, 2, 10],
       scale: [1, 1, 1],
       rotation: [0, t, 0],
       model: cube,
     },
     {
-      translation: [-1.5, -1, 5],
+      translation: [-1.5, -1, 8],
       scale: [0.5, 0.5 + Math.cos(t / 20) / 5, 0.5],
       rotation: [t / 5, 0, 0],
       model: cube,
