@@ -8,7 +8,7 @@ const ctx = canvas.getContext("2d")!;
 
 const rect = ctx.canvas.getBoundingClientRect();
 const dpr = window.devicePixelRatio ?? 1;
-const scale = 1 / 5;
+const scale = 1 / 2;
 canvas.width = Math.round(rect.width * dpr * scale);
 canvas.height = Math.round(rect.height * dpr * scale);
 ctx.scale(dpr, dpr);
@@ -50,69 +50,69 @@ function update() {
   requestAnimationFrame(update);
 }
 
+const verts: Vector3[] = [
+  [+1, +1, +1],
+  [-1, +1, +1],
+  [-1, -1, +1],
+  [+1, -1, +1],
+  [+1, +1, -1],
+  [-1, +1, -1],
+  [-1, -1, -1],
+  [+1, -1, -1],
+];
+
+type Obj = Array<{ verts: [number, number, number], color: Vector3 }>;
+
+const red: Vector3 = [255, 0, 0];
+const green: Vector3 = [0, 255, 0];
+const blue: Vector3 = [0, 0, 255];
+const yellow: Vector3 = [255, 255, 0];
+const purple: Vector3 = [255, 0, 255];
+const cyan: Vector3 = [0, 255, 255];
+const white: Vector3 = [255, 255, 255];
+
+const tris: Obj = [
+  {verts: [0, 1, 2], color: red},
+  {verts: [0, 2, 3], color: red},
+  {verts: [4, 0, 3], color: green},
+  {verts: [4, 3, 7], color: green},
+  {verts: [5, 4, 7], color: blue},
+  {verts: [5, 7, 6], color: blue},
+  {verts: [1, 5, 6], color: yellow},
+  {verts: [1, 6, 2], color: yellow},
+  {verts: [4, 5, 1], color: purple},
+  {verts: [4, 1, 0], color: purple},
+  {verts: [2, 6, 7], color: cyan},
+  {verts: [2, 7, 3], color: cyan},
+];
+
 function render() {
-  var red: Vector3 = [255, 0, 0];
-  var green: Vector3 = [0, 255, 0];
-  var blue: Vector3 = [0, 0, 255];
 
-  {
-    var vA: Vector3 = [-5 + -1 + ((t / 100 + 5) % 11), -0.5 - 1, 5];
-    var vB: Vector3 = [-5 + -1 + ((t / 100 + 5) % 11), 0.5 - 1, 5];
-    var vC: Vector3 = [-4 + -1 + ((t / 100 + 5) % 11), 0.5 - 1, 5];
-    var vD: Vector3 = [-4 + -1 + ((t / 100 + 5) % 11), -0.5 - 1, 5];
-    var vAb: Vector3 = [-5 + -1 + ((t / 100 + 5) % 11), -0.5 - 1, 6];
-    var vBb: Vector3 = [-5 + -1 + ((t / 100 + 5) % 11), 0.5 - 1, 6];
-    var vCb: Vector3 = [-4 + -1 + ((t / 100 + 5) % 11), 0.5 - 1, 6];
-    var vDb: Vector3 = [-4 + -1 + ((t / 100 + 5) % 11), -0.5 - 1, 6];
+  const translation: Vector3 = [0.5, 0, 5];
 
-    drawLine(project(vAb), project(vBb), red);
-    drawLine(project(vBb), project(vCb), red);
-    drawLine(project(vCb), project(vDb), red);
-    drawLine(project(vDb), project(vAb), red);
-
-    drawLine(project(vA), project(vAb), green);
-    drawLine(project(vB), project(vBb), green);
-    drawLine(project(vC), project(vCb), green);
-    drawLine(project(vD), project(vDb), green);
-
-    drawLine(project(vA), project(vB), blue);
-    drawLine(project(vB), project(vC), blue);
-    drawLine(project(vC), project(vD), blue);
-    drawLine(project(vD), project(vA), blue);
+  function translate(verts: Vector3[], trans: Vector3): Vector3[] {
+    return verts.map((v) => [
+      v[0] + trans[0],
+      v[1] + trans[1],
+      v[2] + trans[2],
+    ])
   }
 
-  {
-    var vA: Vector3 = [-5 + -1 + ((t / 100) % 11), -0.5 + 1, 5];
-    var vB: Vector3 = [-5 + -1 + ((t / 100) % 11), 0.5 + 1, 5];
-    var vC: Vector3 = [-4 + -1 + ((t / 100) % 11), 0.5 + 1, 5];
-    var vD: Vector3 = [-4 + -1 + ((t / 100) % 11), -0.5 + 1, 5];
-    var vAb: Vector3 = [-5 + -1 + ((t / 100) % 11), -0.5 + 1, 6];
-    var vBb: Vector3 = [-5 + -1 + ((t / 100) % 11), 0.5 + 1, 6];
-    var vCb: Vector3 = [-4 + -1 + ((t / 100) % 11), 0.5 + 1, 6];
-    var vDb: Vector3 = [-4 + -1 + ((t / 100) % 11), -0.5 + 1, 6];
+  const projectedVerts = translate(verts, translation).map(project);
 
-    drawLine(project(vA), project(vB), blue);
-    drawLine(project(vB), project(vC), blue);
-    drawLine(project(vC), project(vD), blue);
-    drawLine(project(vD), project(vA), blue);
-
-    drawLine(project(vAb), project(vBb), red);
-    drawLine(project(vBb), project(vCb), red);
-    drawLine(project(vCb), project(vDb), red);
-    drawLine(project(vDb), project(vAb), red);
-
-    drawLine(project(vA), project(vAb), green);
-    drawLine(project(vB), project(vBb), green);
-    drawLine(project(vC), project(vCb), green);
-    drawLine(project(vD), project(vDb), green);
-  }
+  tris.forEach((t) => drawWireframeTriangle(
+    projectedVerts[t.verts[0]],
+    projectedVerts[t.verts[1]],
+    projectedVerts[t.verts[2]],
+    t.color,
+  ));
 }
 
 function isPointInTriangle(
   P: Vector2,
   A: Vector2,
   B: Vector2,
-  C: Vector2
+  C: Vector2,
 ): [boolean, Vector3] {
   const areaABC = triangleArea(A, B, C);
   const areaPBC = triangleArea(P, B, C);
@@ -137,7 +137,7 @@ function drawFilledTriangle(
   p3: Vector2,
   color1: Vector3,
   color2: Vector3 = color1,
-  color3: Vector3 = color1
+  color3: Vector3 = color1,
 ) {
   const [bbMin, bbMax] = getBoundingBox([p1, p2, p3]);
 
@@ -175,7 +175,7 @@ function drawWireframeTriangle(
   p1: Vector2,
   p2: Vector2,
   p3: Vector2,
-  color: Vector3
+  color: Vector3,
 ) {
   drawLine(p1, p2, color);
   drawLine(p2, p3, color);
@@ -272,7 +272,7 @@ function interpolate(start: number, end: number, proportion: number): number {
 function triangleArea(A: Vector2, B: Vector2, C: Vector2): number {
   return (
     Math.abs(
-      A[0] * (B[1] - C[1]) + B[0] * (C[1] - A[1]) + C[0] * (A[1] - B[1])
+      A[0] * (B[1] - C[1]) + B[0] * (C[1] - A[1]) + C[0] * (A[1] - B[1]),
     ) / 2
   );
 }
