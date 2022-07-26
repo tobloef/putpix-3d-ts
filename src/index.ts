@@ -86,7 +86,6 @@ const blue: Vector3 = [0, 0, 255];
 const yellow: Vector3 = [255, 255, 0];
 const purple: Vector3 = [255, 0, 255];
 const cyan: Vector3 = [0, 255, 255];
-const white: Vector3 = [255, 255, 255];
 
 const tris: Tri[] = [
   {verts: [0, 1, 2], color: red},
