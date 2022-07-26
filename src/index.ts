@@ -8,9 +8,9 @@ const ctx = canvas.getContext("2d")!;
 
 const rect = ctx.canvas.getBoundingClientRect();
 const dpr = window.devicePixelRatio ?? 1;
-const scale = 1 / 2;
-canvas.width = Math.round(rect.width * dpr * scale);
-canvas.height = Math.round(rect.height * dpr * scale);
+const renderScale = 1 / 2;
+canvas.width = Math.round(rect.width * dpr * renderScale);
+canvas.height = Math.round(rect.height * dpr * renderScale);
 ctx.scale(dpr, dpr);
 
 // @ts-ignore
@@ -50,6 +50,25 @@ function update() {
   requestAnimationFrame(update);
 }
 
+type Tri = {
+  verts: [number, number, number],
+  color: Vector3
+};
+
+type Model = {
+  verts: Vector3[],
+  tris: Tri[]
+};
+
+type Obj = {
+  translation: Vector3,
+  rotation: Vector3,
+  scale: Vector3,
+  model: Model,
+};
+
+type Scene = Obj[];
+
 const verts: Vector3[] = [
   [+1, +1, +1],
   [-1, +1, +1],
@@ -61,8 +80,6 @@ const verts: Vector3[] = [
   [+1, -1, -1],
 ];
 
-type Obj = Array<{ verts: [number, number, number], color: Vector3 }>;
-
 const red: Vector3 = [255, 0, 0];
 const green: Vector3 = [0, 255, 0];
 const blue: Vector3 = [0, 0, 255];
@@ -71,7 +88,7 @@ const purple: Vector3 = [255, 0, 255];
 const cyan: Vector3 = [0, 255, 255];
 const white: Vector3 = [255, 255, 255];
 
-const tris: Obj = [
+const tris: Tri[] = [
   {verts: [0, 1, 2], color: red},
   {verts: [0, 2, 3], color: red},
   {verts: [4, 0, 3], color: green},
@@ -86,26 +103,95 @@ const tris: Obj = [
   {verts: [2, 7, 3], color: cyan},
 ];
 
+const cube: Model = {
+  tris,
+  verts,
+}
+
+function translate(verts: Vector3[], translation: Vector3): Vector3[] {
+  return verts.map((v) => [
+    v[0] + translation[0],
+    v[1] + translation[1],
+    v[2] + translation[2],
+  ])
+}
+
+function scale(verts: Vector3[], scale: Vector3): Vector3[] {
+  return verts.map((v) => [
+    v[0] * scale[0],
+    v[1] * scale[1],
+    v[2] * scale[2],
+  ])
+}
+
+function degToRad(deg: number): number {
+  return deg * (Math.PI / 180);
+}
+
+// TODO: Use matrix math: https://stackoverflow.com/a/34052492/4688606
+function rotate(verts: Vector3[], rotation: Vector3): Vector3[] {
+  return verts.map((v) => {
+    const cosX = Math.cos(degToRad(rotation[0]));
+    const sinX = Math.sin(degToRad(rotation[0]));
+    const cosY = Math.cos(degToRad(rotation[1]));
+    const sinY = Math.sin(degToRad(rotation[1]));
+    const cosZ = Math.cos(degToRad(rotation[2]));
+    const sinZ = Math.sin(degToRad(rotation[2]));
+
+    const x_x = cosZ * cosY;
+    const x_y = cosZ * sinY * sinX - sinZ * cosX;
+    const x_z = cosZ * sinY * cosX + sinZ * sinX;
+    const y_x = sinZ * cosY;
+    const y_y = sinZ * sinY * sinX + cosZ * cosX;
+    const y_z = sinZ * sinY * cosX - cosZ * sinX;
+    const z_x = -sinY;
+    const z_y = cosY * sinX;
+    const z_z = cosY * cosX;
+
+    const x = v[0];
+    const y = v[1];
+    const z = v[2];
+
+    return [
+      v[0] = x_x * x + x_y * y + x_z * z,
+      v[1] = y_x * x + y_y * y + y_z * z,
+      v[2] = z_x * x + z_y * y + z_z * z,
+    ];
+  })
+}
+
 function render() {
+  const scene: Scene = [
+    {
+      translation: [0.5 + Math.sin(t / 20) * 2, 2, 7],
+      scale: [1, 1, 1],
+      rotation: [0, t, 0],
+      model: cube,
+    },
+    {
+      translation: [-1.5, -1, 5],
+      scale: [0.5, 0.5 + Math.cos(t / 20) / 5, 0.5],
+      rotation: [t / 5, 0, 0],
+      model: cube,
+    },
+  ];
 
-  const translation: Vector3 = [0.5, 0, 5];
+  scene.forEach((obj) => {
+    const original = obj.model.verts;
 
-  function translate(verts: Vector3[], trans: Vector3): Vector3[] {
-    return verts.map((v) => [
-      v[0] + trans[0],
-      v[1] + trans[1],
-      v[2] + trans[2],
-    ])
-  }
+    const scaled = scale(original, obj.scale);
+    const rotated = rotate(scaled, obj.rotation);
+    const translated = translate(rotated, obj.translation);
 
-  const projectedVerts = translate(verts, translation).map(project);
+    const projected = translated.map(project);
 
-  tris.forEach((t) => drawWireframeTriangle(
-    projectedVerts[t.verts[0]],
-    projectedVerts[t.verts[1]],
-    projectedVerts[t.verts[2]],
-    t.color,
-  ));
+    obj.model.tris.forEach((t) => drawWireframeTriangle(
+      projected[t.verts[0]],
+      projected[t.verts[1]],
+      projected[t.verts[2]],
+      t.color,
+    ));
+  });
 }
 
 function isPointInTriangle(
