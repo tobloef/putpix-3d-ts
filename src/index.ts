@@ -127,7 +127,7 @@ function degToRad(deg: number): number {
   return deg * (Math.PI / 180);
 }
 
-// TODO: Use matrix math: https://stackoverflow.com/a/34052492/4688606
+// TODO: Use matrix math utils: https://stackoverflow.com/a/34052492/4688606
 function rotate(verts: Vector3[], rotation: Vector3): Vector3[] {
   return verts.map((v) => {
     const cosX = Math.cos(degToRad(rotation[0]));
@@ -360,6 +360,97 @@ function triangleArea(A: Vector2, B: Vector2, C: Vector2): number {
       A[0] * (B[1] - C[1]) + B[0] * (C[1] - A[1]) + C[0] * (A[1] - B[1]),
     ) / 2
   );
+}
+
+type Vector = number[];
+
+// @ts-ignore
+function vecAdd<T extends Vector>(a: T, b: T): T {
+  return a.map((x, i) => x + b[i]) as T;
+}
+
+// @ts-ignore
+function vecSub<T extends Vector>(a: T, b: T): T {
+  return a.map((x, i) => x - b[i]) as T;
+}
+
+// @ts-ignore
+function vecMult<T extends Vector>(a: T, k: number): T {
+  return a.map((x) => x * k) as T;
+}
+
+// @ts-ignore
+function vecDiv<T extends Vector>(a: T, k: number): T {
+  return a.map((x) => x / k) as T;
+}
+
+// @ts-ignore
+function vecMag<T extends Vector>(a: T): number {
+  return Math.sqrt(
+    Math.pow(a[0], 2) +
+    Math.pow(a[1], 2) +
+    Math.pow(a[2], 2),
+  );
+}
+
+// @ts-ignore
+function vecNorm<T extends Vector>(a: T): T {
+  const mag = vecMag(a);
+  return a.map((x) => x / mag) as T;
+}
+
+// @ts-ignore
+function vecDot<T extends Vector>(a: T, b: T): number {
+  return a.reduce((acc, x, i) => acc + (x * b[i]), 0);
+}
+
+// @ts-ignore
+function vecCross(a: Vector3, b: Vector3): Vector3 {
+  return [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ]
+}
+
+type Matrix = number[][];
+
+// @ts-ignore
+function matAdd<T extends Matrix>(a: T, b: T): T {
+  return a.map((y, i) => {
+    return y.map((x, j) => {
+      return x + b[i][j];
+    });
+  }) as T;
+}
+
+// @ts-ignore
+function matMulNum<T extends Matrix>(a: T, k: number): T {
+  return a.map((y) => {
+    return y.map((x) => {
+      return x * k;
+    });
+  }) as T;
+}
+
+// @ts-ignore
+function matMultMat(a: Matrix, b: Matrix): Matrix {
+  if (a[0].length !== b.length) {
+    throw new Error("Invalid matrix multiplication.");
+  }
+
+  return a.map((row, i) => {
+    return b[0].map((_, j) => {
+      return row.reduce((acc, _, k) => {
+        return acc + a[i][k] * b[k][j]
+      }, 0);
+    })
+  })
+}
+
+// @ts-ignore
+function matMultVec<T extends Matrix>(m: T, v: Vector): T {
+  return matMultMat(m, v.map((x) => [x])) as T;
 }
 
 start();
