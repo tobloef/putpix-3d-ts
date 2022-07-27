@@ -25,14 +25,6 @@ const viewportSizeX = 1 * fov;
 const viewportSizeY = (imageData.height / imageData.width) * fov;
 const projectionPlaneZ = 1;
 
-let cameraTrannsform: {
-  translation: Vector3,
-  rotation: Vector3,
-} = {
-  translation: [0, 0, 0],
-  rotation: [0, 0, 0],
-}
-
 function project(p: Vector3): Vector2 {
   const ppy = (p[1] * projectionPlaneZ) / p[2];
   const ppx = (p[0] * projectionPlaneZ) / p[2];
@@ -126,33 +118,37 @@ function scale(verts: Vector3[], scale: Vector3): Vector3[] {
 
 function rotate(verts: Vector3[], rotation: Vector3): Vector3[] {
   return verts.map((v) => {
-    const dX: number = degToRad(rotation[0]);
-    const mX: Matrix3x3 = [
-      [1, 0, 0],
-      [0, Math.cos(dX), -Math.sin(dX)],
-      [0, Math.sin(dX), Math.cos(dX)],
-    ];
+    const m = rotationVectorToMatrix(rotation);
 
-    const dY: number = degToRad(rotation[1]);
-    const mY: Matrix3x3 = [
-      [Math.cos(dY), 0, Math.sin(dY)],
-      [0, 1, 0],
-      [-Math.sin(dY), 0, Math.cos(dY)],
-    ];
-
-    const dZ: number = degToRad(rotation[2]);
-    const mZ: Matrix3x3 = [
-      [Math.cos(dZ), -Math.sin(dZ), 0],
-      [Math.sin(dZ), Math.cos(dZ), 0],
-      [0, 0, 1],
-    ];
-
-    const mXYZ: Matrix3x3 = matMultMat(matMultMat(mX, mY) as Matrix3x3, mZ) as Matrix3x3;
-
-    const newV: Vector3 = matMultVec(mXYZ, v).map((x) => x[0]) as Vector3;
-
-    return newV;
+    return matMultVec(m, v).map((x) => x[0]) as Vector3;
   });
+}
+
+function rotationVectorToMatrix(rotation: Vector3) {
+  const dX: number = degToRad(rotation[0]);
+  const mX: Matrix3x3 = [
+    [1, 0, 0],
+    [0, Math.cos(dX), -Math.sin(dX)],
+    [0, Math.sin(dX), Math.cos(dX)],
+  ];
+
+  const dY: number = degToRad(rotation[1]);
+  const mY: Matrix3x3 = [
+    [Math.cos(dY), 0, Math.sin(dY)],
+    [0, 1, 0],
+    [-Math.sin(dY), 0, Math.cos(dY)],
+  ];
+
+  const dZ: number = degToRad(rotation[2]);
+  const mZ: Matrix3x3 = [
+    [Math.cos(dZ), -Math.sin(dZ), 0],
+    [Math.sin(dZ), Math.cos(dZ), 0],
+    [0, 0, 1],
+  ];
+
+  const mXYZ: Matrix3x3 = matMultMat(matMultMat(mX, mY) as Matrix3x3, mZ) as Matrix3x3;
+
+  return mXYZ;
 }
 
 function degToRad(deg: number): number {
@@ -160,11 +156,19 @@ function degToRad(deg: number): number {
 }
 
 function render() {
+  let cameraTransform: {
+    translation: Vector3,
+    rotation: Vector3,
+  } = {
+    translation: [0, 0, -5],
+    rotation: [0, 0, 0],
+  }
+
   const scene: Scene = [
     {
       translation: [0, 0, 5],
       scale: [1, 1, 1],
-      rotation: [t, t, t],
+      rotation: [0, 0, 0],
       model: cube,
     },
   ];
@@ -176,7 +180,15 @@ function render() {
     const rotated = rotate(scaled, obj.rotation);
     const translated = translate(rotated, obj.translation);
 
-    const projected = translated.map(project);
+    const camTransformed = translated.map((v) => {
+      const camTranslated = vecSub(v, cameraTransform.translation);
+      const m = rotationVectorToMatrix(cameraTransform.rotation);
+      const mTransposed = matTranspose(m);
+      const camRotated = matMultVec(mTransposed, camTranslated).map((x) => x[0]) as Vector3;
+      return camRotated;
+    });
+
+    const projected = camTransformed.map(project);
 
     obj.model.tris.forEach((t) => {
       const pvX = projected[t.verts[0]];
@@ -457,6 +469,14 @@ function matMultMat(a: Matrix, b: Matrix): Matrix {
 // @ts-ignore
 function matMultVec(m: Matrix, v: Vector): Matrix {
   return matMultMat(m, v.map((x) => [x]));
+}
+
+function matTranspose<T extends Matrix>(m: T): T {
+  return m.map((r, i) => {
+    return r.map((_, j) => {
+      return m[j][i];
+    });
+  }) as T;
 }
 
 start();
