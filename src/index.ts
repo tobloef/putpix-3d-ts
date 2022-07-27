@@ -2,6 +2,7 @@ import "./index.css";
 
 type Vector2 = [number, number];
 type Vector3 = [number, number, number];
+type Matrix3x3 = [Vector3, Vector3, Vector3];
 
 const canvas = document.querySelector("canvas")!;
 const ctx = canvas.getContext("2d")!;
@@ -23,6 +24,14 @@ const fov = 1.5;
 const viewportSizeX = 1 * fov;
 const viewportSizeY = (imageData.height / imageData.width) * fov;
 const projectionPlaneZ = 1;
+
+let cameraTrannsform: {
+  translation: Vector3,
+  rotation: Vector3,
+} = {
+  translation: [0, 0, 0],
+  rotation: [0, 0, 0],
+}
 
 function project(p: Vector3): Vector2 {
   const ppy = (p[1] * projectionPlaneZ) / p[2];
@@ -108,69 +117,54 @@ const cube: Model = {
 }
 
 function translate(verts: Vector3[], translation: Vector3): Vector3[] {
-  return verts.map((v) => [
-    v[0] + translation[0],
-    v[1] + translation[1],
-    v[2] + translation[2],
-  ])
+  return verts.map((v) => vecAdd(v, translation));
 }
 
 function scale(verts: Vector3[], scale: Vector3): Vector3[] {
-  return verts.map((v) => [
-    v[0] * scale[0],
-    v[1] * scale[1],
-    v[2] * scale[2],
-  ])
+  return verts.map((v) => vecMultVec(v, scale));
+}
+
+function rotate(verts: Vector3[], rotation: Vector3): Vector3[] {
+  return verts.map((v) => {
+    const dX: number = degToRad(rotation[0]);
+    const mX: Matrix3x3 = [
+      [1, 0, 0],
+      [0, Math.cos(dX), -Math.sin(dX)],
+      [0, Math.sin(dX), Math.cos(dX)],
+    ];
+
+    const dY: number = degToRad(rotation[1]);
+    const mY: Matrix3x3 = [
+      [Math.cos(dY), 0, Math.sin(dY)],
+      [0, 1, 0],
+      [-Math.sin(dY), 0, Math.cos(dY)],
+    ];
+
+    const dZ: number = degToRad(rotation[2]);
+    const mZ: Matrix3x3 = [
+      [Math.cos(dZ), -Math.sin(dZ), 0],
+      [Math.sin(dZ), Math.cos(dZ), 0],
+      [0, 0, 1],
+    ];
+
+    const mXYZ: Matrix3x3 = matMultMat(matMultMat(mX, mY) as Matrix3x3, mZ) as Matrix3x3;
+
+    const newV: Vector3 = matMultVec(mXYZ, v).map((x) => x[0]) as Vector3;
+
+    return newV;
+  });
 }
 
 function degToRad(deg: number): number {
   return deg * (Math.PI / 180);
 }
 
-// TODO: Use matrix math utils: https://stackoverflow.com/a/34052492/4688606
-function rotate(verts: Vector3[], rotation: Vector3): Vector3[] {
-  return verts.map((v) => {
-    const cosX = Math.cos(degToRad(rotation[0]));
-    const sinX = Math.sin(degToRad(rotation[0]));
-    const cosY = Math.cos(degToRad(rotation[1]));
-    const sinY = Math.sin(degToRad(rotation[1]));
-    const cosZ = Math.cos(degToRad(rotation[2]));
-    const sinZ = Math.sin(degToRad(rotation[2]));
-
-    const x_x = cosZ * cosY;
-    const x_y = cosZ * sinY * sinX - sinZ * cosX;
-    const x_z = cosZ * sinY * cosX + sinZ * sinX;
-    const y_x = sinZ * cosY;
-    const y_y = sinZ * sinY * sinX + cosZ * cosX;
-    const y_z = sinZ * sinY * cosX - cosZ * sinX;
-    const z_x = -sinY;
-    const z_y = cosY * sinX;
-    const z_z = cosY * cosX;
-
-    const x = v[0];
-    const y = v[1];
-    const z = v[2];
-
-    return [
-      v[0] = x_x * x + x_y * y + x_z * z,
-      v[1] = y_x * x + y_y * y + y_z * z,
-      v[2] = z_x * x + z_y * y + z_z * z,
-    ];
-  })
-}
-
 function render() {
   const scene: Scene = [
     {
-      translation: [0.5 + Math.sin(t / 20) * 2, 2, 10],
+      translation: [0, 0, 5],
       scale: [1, 1, 1],
-      rotation: [0, t, 0],
-      model: cube,
-    },
-    {
-      translation: [-1.5, -1, 8],
-      scale: [0.5, 0.5 + Math.cos(t / 20) / 5, 0.5],
-      rotation: [t / 5, 0, 0],
+      rotation: [t, t, t],
       model: cube,
     },
   ];
@@ -184,12 +178,13 @@ function render() {
 
     const projected = translated.map(project);
 
-    obj.model.tris.forEach((t) => drawWireframeTriangle(
-      projected[t.verts[0]],
-      projected[t.verts[1]],
-      projected[t.verts[2]],
-      t.color,
-    ));
+    obj.model.tris.forEach((t) => {
+      const pvX = projected[t.verts[0]];
+      const pvY = projected[t.verts[1]];
+      const pvZ = projected[t.verts[2]];
+
+      drawWireframeTriangle(pvX, pvY, pvZ, t.color);
+    });
   });
 }
 
@@ -203,6 +198,10 @@ function isPointInTriangle(
   const areaPBC = triangleArea(P, B, C);
   const areaAPC = triangleArea(A, P, C);
   const areaABP = triangleArea(A, B, P);
+
+  if (areaABC === 0) {
+    return [false, [0, 0, 0]];
+  }
 
   const margin = 0.000001;
 
@@ -338,7 +337,9 @@ function drawLine(p1: Vector2, p2: Vector2, color: Vector3) {
   for (let x = x1; x <= x2; x++) {
     const totalWidth = x2 - x1;
     const currentWidth = x - x1;
-    const proportion = currentWidth / totalWidth;
+    const proportion = totalWidth === 0 ?
+      1 :
+      currentWidth / totalWidth;
 
     const y = Math.round(interpolate(y1, y2, proportion));
 
@@ -377,6 +378,11 @@ function vecSub<T extends Vector>(a: T, b: T): T {
 // @ts-ignore
 function vecMult<T extends Vector>(a: T, k: number): T {
   return a.map((x) => x * k) as T;
+}
+
+// @ts-ignore
+function vecMultVec<T extends Vector>(a: T, b: T): T {
+  return a.map((x, i) => x * b[i]) as T;
 }
 
 // @ts-ignore
@@ -449,8 +455,8 @@ function matMultMat(a: Matrix, b: Matrix): Matrix {
 }
 
 // @ts-ignore
-function matMultVec<T extends Matrix>(m: T, v: Vector): T {
-  return matMultMat(m, v.map((x) => [x])) as T;
+function matMultVec(m: Matrix, v: Vector): Matrix {
+  return matMultMat(m, v.map((x) => [x]));
 }
 
 start();
