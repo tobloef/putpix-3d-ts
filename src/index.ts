@@ -137,6 +137,7 @@ const yellow: Vector3 = vecMult([255, 255, 0], str );
 const purple: Vector3 = vecMult([255, 0, 255], str );
 const cyan: Vector3 = vecMult([0, 255, 255], str );
 const white: Vector3 = [255, 255, 255];
+// @ts-ignore
 const black: Vector3 = [0, 0, 0];
 
 const cube: Model = {
@@ -166,6 +167,7 @@ const cube: Model = {
   ],
 };
 
+// @ts-ignore
 const cyanTriangle: Model = {
   verts: [
     [0, 0, 0],
@@ -177,6 +179,7 @@ const cyanTriangle: Model = {
   ],
 };
 
+// @ts-ignore
 const yellowTriangle: Model = {
   verts: [
     [6, 10, 0],
@@ -188,6 +191,7 @@ const yellowTriangle: Model = {
   ],
 };
 
+// @ts-ignore
 const purpleTriangle: Model = {
   verts: [
     [14, 4, 0],
