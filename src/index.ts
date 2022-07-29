@@ -129,12 +129,15 @@ type Obj = {
 
 type Scene = Obj[];
 
-const red: Vector3 = [255, 0, 0];
-const green: Vector3 = [0, 255, 0];
-const blue: Vector3 = [0, 0, 255];
-const yellow: Vector3 = [255, 255, 0];
-const purple: Vector3 = [255, 0, 255];
-const cyan: Vector3 = [0, 255, 255];
+const str = 0.5;
+const red: Vector3 = vecMult([255, 0, 0], str );
+const green: Vector3 = vecMult([0, 255, 0], str );
+const blue: Vector3 = vecMult([0, 0, 255], str );
+const yellow: Vector3 = vecMult([255, 255, 0], str );
+const purple: Vector3 = vecMult([255, 0, 255], str );
+const cyan: Vector3 = vecMult([0, 255, 255], str );
+const white: Vector3 = [255, 255, 255];
+const black: Vector3 = [0, 0, 0];
 
 const cube: Model = {
   verts: [
@@ -170,7 +173,7 @@ const cyanTriangle: Model = {
     [10, 10, 3],
   ],
   tris: [
-    { verts: [0, 1, 2], color: [cyan, cyan, cyan] },
+    { verts: [0, 1, 2], color: [green, green, green] },
   ],
 };
 
@@ -192,12 +195,19 @@ const purpleTriangle: Model = {
     [-2, 0, 3],
   ],
   tris: [
-    { verts: [0, 1, 2], color: [purple, purple, purple] },
+    { verts: [0, 1, 2], color: [red, red, red] },
   ],
 };
 
 function render() {
   const scene: Scene = [
+    {
+      translation: [0, 0, 0],
+      scale: [1, 1, 1],
+      rotation: [t, t, t],
+      model: cube,
+    },
+    /*
     {
       translation: [0, 0, 0],
       scale: [0.1, 0.1, 0.1],
@@ -216,6 +226,7 @@ function render() {
       rotation: [0, t / 3, 0],
       model: yellowTriangle,
     },
+    */
   ];
 
   scene.forEach((obj) => {
@@ -254,6 +265,16 @@ function render() {
         { z: unprojected[t.verts[1]][2], color: t.color[1]},
         { z: unprojected[t.verts[2]][2], color: t.color[2]},
       );
+    });
+
+    obj.model.tris.forEach((t) => {
+      const p1 = projected[t.verts[0]];
+      const p2 = projected[t.verts[1]];
+      const p3 = projected[t.verts[2]];
+
+      drawLine(p1, p2, white);
+      drawLine(p2, p3, white);
+      drawLine(p1, p3, white);
     });
   });
 }
