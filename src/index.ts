@@ -20,19 +20,16 @@ let t = 0;
 const blackImageData = new ImageData(canvas.width, canvas.height);
 const imageData = new ImageData(canvas.width, canvas.height);
 
-const fov = 1.5;
-const viewportSizeX = 1 * fov;
-const viewportSizeY = (imageData.height / imageData.width) * fov;
+const viewportSizeX = imageData.width / imageData.height;
+const viewportSizeY = 1;
 const projectionPlaneZ = 1;
 
-function project(p: Vector3): Vector2 {
-  const ppy = (p[1] * projectionPlaneZ) / p[2];
-  const ppx = (p[0] * projectionPlaneZ) / p[2];
-
-  const cx = (ppx * imageData.width) / viewportSizeX + imageData.width / 2;
-  const cy = (ppy * imageData.height) / viewportSizeY + imageData.height / 2;
-
-  return [cx, cy];
+let cam: {
+  translation: Vector3,
+  rotation: Vector3,
+} = {
+  translation: [0, 0, -5],
+  rotation: [0, 0, 0],
 }
 
 function start() {
@@ -50,6 +47,32 @@ function update() {
 
   requestAnimationFrame(update);
 }
+
+const moveSens = 0.5;
+const rotateSens = 5;
+
+window.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowUp") {
+    e.preventDefault();
+    const m = rotationVectorToMatrix(cam.rotation);
+    const camRotated = matMultVec(m, [0, 0, moveSens]).map((x) => x[0]) as Vector3;
+    cam.translation = vecAdd(cam.translation, camRotated);
+  }
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    const m = rotationVectorToMatrix(cam.rotation);
+    const camRotated = matMultVec(m, [0, 0, moveSens]).map((x) => x[0]) as Vector3;
+    cam.translation = vecSub(cam.translation, camRotated);
+  }
+  if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    cam.rotation[1] -= rotateSens;
+  }
+  if (e.key === "ArrowRight") {
+    e.preventDefault();
+    cam.rotation[1] += rotateSens;
+  }
+})
 
 type Tri = {
   verts: [number, number, number],
@@ -108,6 +131,53 @@ const cube: Model = {
   verts,
 }
 
+function render() {
+  const scene: Scene = [
+    {
+      translation: [-6, 0, 5],
+      scale: [1, 1, 1],
+      rotation: [0, 0, 0],
+      model: cube,
+    },
+  ];
+
+  scene.forEach((obj) => {
+    const original = obj.model.verts;
+
+    const scaled = scale(original, obj.scale);
+    const rotated = rotate(scaled, obj.rotation);
+    const translated = translate(rotated, obj.translation);
+
+    const camTransformed = translated.map((v) => {
+      const camTranslated = vecSub(v, cam.translation);
+      const m = rotationVectorToMatrix(cam.rotation);
+      const mTransposed = matTranspose(m);
+      const camRotated = matMultVec(mTransposed, camTranslated).map((x) => x[0]) as Vector3;
+      return camRotated;
+    });
+
+    const projected = camTransformed.map(project);
+
+    obj.model.tris.forEach((t) => {
+      const pvX = projected[t.verts[0]];
+      const pvY = projected[t.verts[1]];
+      const pvZ = projected[t.verts[2]];
+
+      drawWireframeTriangle(pvX, pvY, pvZ, t.color);
+    });
+  });
+}
+
+function project(p: Vector3): Vector2 {
+  const ppy = (p[1] * projectionPlaneZ) / p[2];
+  const ppx = (p[0] * projectionPlaneZ) / p[2];
+
+  const cx = (ppx * imageData.width) / viewportSizeX + imageData.width / 2;
+  const cy = (ppy * imageData.height) / viewportSizeY + imageData.height / 2;
+
+  return [cx, cy];
+}
+
 function translate(verts: Vector3[], translation: Vector3): Vector3[] {
   return verts.map((v) => vecAdd(v, translation));
 }
@@ -153,51 +223,6 @@ function rotationVectorToMatrix(rotation: Vector3) {
 
 function degToRad(deg: number): number {
   return deg * (Math.PI / 180);
-}
-
-function render() {
-  let cameraTransform: {
-    translation: Vector3,
-    rotation: Vector3,
-  } = {
-    translation: [0, 0, -5],
-    rotation: [0, 0, 0],
-  }
-
-  const scene: Scene = [
-    {
-      translation: [0, 0, 5],
-      scale: [1, 1, 1],
-      rotation: [0, 0, 0],
-      model: cube,
-    },
-  ];
-
-  scene.forEach((obj) => {
-    const original = obj.model.verts;
-
-    const scaled = scale(original, obj.scale);
-    const rotated = rotate(scaled, obj.rotation);
-    const translated = translate(rotated, obj.translation);
-
-    const camTransformed = translated.map((v) => {
-      const camTranslated = vecSub(v, cameraTransform.translation);
-      const m = rotationVectorToMatrix(cameraTransform.rotation);
-      const mTransposed = matTranspose(m);
-      const camRotated = matMultVec(mTransposed, camTranslated).map((x) => x[0]) as Vector3;
-      return camRotated;
-    });
-
-    const projected = camTransformed.map(project);
-
-    obj.model.tris.forEach((t) => {
-      const pvX = projected[t.verts[0]];
-      const pvY = projected[t.verts[1]];
-      const pvZ = projected[t.verts[2]];
-
-      drawWireframeTriangle(pvX, pvY, pvZ, t.color);
-    });
-  });
 }
 
 function isPointInTriangle(
