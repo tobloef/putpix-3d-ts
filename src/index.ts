@@ -19,6 +19,8 @@ let t = 0;
 
 const blackImageData = new ImageData(canvas.width, canvas.height);
 const imageData = new ImageData(canvas.width, canvas.height);
+const blankZBuffer = new Float64Array(canvas.width * canvas.height);
+const zBuffer = Float64Array.from(blankZBuffer);
 
 const viewportSizeX = imageData.width / imageData.height;
 const viewportSizeY = 1;
@@ -38,6 +40,7 @@ function start() {
 
 function update() {
   imageData.data.set(blackImageData.data);
+  zBuffer.set(blankZBuffer);
 
   render();
 
@@ -66,17 +69,50 @@ window.addEventListener("keydown", (e) => {
   }
   if (e.key === "ArrowLeft") {
     e.preventDefault();
-    cam.rotation[1] -= rotateSens;
+    const m = rotationVectorToMatrix(cam.rotation);
+    const camRotated = matMultVec(m, [moveSens, 0, 0]).map((x) => x[0]) as Vector3;
+    cam.translation = vecSub(cam.translation, camRotated);
   }
   if (e.key === "ArrowRight") {
     e.preventDefault();
+    const m = rotationVectorToMatrix(cam.rotation);
+    const camRotated = matMultVec(m, [moveSens, 0, 0]).map((x) => x[0]) as Vector3;
+    cam.translation = vecAdd(cam.translation, camRotated);
+  }
+  if (e.key === "w") {
+    e.preventDefault();
+    cam.rotation[0] += rotateSens;
+  }
+  if (e.key === "s") {
+    e.preventDefault();
+    cam.rotation[0] -= rotateSens;
+  }
+  if (e.key === "a") {
+    e.preventDefault();
+    cam.rotation[1] -= rotateSens;
+  }
+  if (e.key === "d") {
+    e.preventDefault();
     cam.rotation[1] += rotateSens;
+  }
+  if (e.key === "e") {
+    e.preventDefault();
+    cam.rotation[2] += rotateSens;
+  }
+  if (e.key === "q") {
+    e.preventDefault();
+    cam.rotation[2] -= rotateSens;
   }
 })
 
+type VertAttribute = {
+  color: Vector3,
+  z: number,
+}
+
 type Tri = {
   verts: [number, number, number],
-  color: Vector3
+  color: [Vector3, Vector3, Vector3]
 };
 
 type Model = {
@@ -93,17 +129,6 @@ type Obj = {
 
 type Scene = Obj[];
 
-const verts: Vector3[] = [
-  [+1, +1, +1],
-  [-1, +1, +1],
-  [-1, -1, +1],
-  [+1, -1, +1],
-  [+1, +1, -1],
-  [-1, +1, -1],
-  [-1, -1, -1],
-  [+1, -1, -1],
-];
-
 const red: Vector3 = [255, 0, 0];
 const green: Vector3 = [0, 255, 0];
 const blue: Vector3 = [0, 0, 255];
@@ -111,33 +136,85 @@ const yellow: Vector3 = [255, 255, 0];
 const purple: Vector3 = [255, 0, 255];
 const cyan: Vector3 = [0, 255, 255];
 
-const tris: Tri[] = [
-  {verts: [0, 1, 2], color: red},
-  {verts: [0, 2, 3], color: red},
-  {verts: [4, 0, 3], color: green},
-  {verts: [4, 3, 7], color: green},
-  {verts: [5, 4, 7], color: blue},
-  {verts: [5, 7, 6], color: blue},
-  {verts: [1, 5, 6], color: yellow},
-  {verts: [1, 6, 2], color: yellow},
-  {verts: [4, 5, 1], color: purple},
-  {verts: [4, 1, 0], color: purple},
-  {verts: [2, 6, 7], color: cyan},
-  {verts: [2, 7, 3], color: cyan},
-];
-
 const cube: Model = {
-  tris,
-  verts,
-}
+  verts: [
+    [+1, +1, +1],
+    [-1, +1, +1],
+    [-1, -1, +1],
+    [+1, -1, +1],
+    [+1, +1, -1],
+    [-1, +1, -1],
+    [-1, -1, -1],
+    [+1, -1, -1],
+  ],
+  tris: [
+    {verts: [0, 1, 2], color: [red, red, red]},
+    {verts: [0, 2, 3], color: [red, red, red]},
+    {verts: [4, 0, 3], color: [green, green, green]},
+    {verts: [4, 3, 7], color: [green, green, green]},
+    {verts: [5, 4, 7], color: [blue, blue, blue]},
+    {verts: [5, 7, 6], color: [blue, blue, blue]},
+    {verts: [1, 5, 6], color: [yellow, yellow, yellow]},
+    {verts: [1, 6, 2], color: [yellow, yellow, yellow]},
+    {verts: [4, 5, 1], color: [purple, purple, purple]},
+    {verts: [4, 1, 0], color: [purple, purple, purple]},
+    {verts: [2, 6, 7], color: [cyan, cyan, cyan]},
+    {verts: [2, 7, 3], color: [cyan, cyan, cyan]},
+  ],
+};
+
+const cyanTriangle: Model = {
+  verts: [
+    [0, 0, 0],
+    [2, 0, 0],
+    [10, 10, 3],
+  ],
+  tris: [
+    { verts: [0, 1, 2], color: [cyan, cyan, cyan] },
+  ],
+};
+
+const yellowTriangle: Model = {
+  verts: [
+    [6, 10, 0],
+    [8, 10, 0],
+    [12, 0, 3],
+  ],
+  tris: [
+    { verts: [0, 1, 2], color: [yellow, yellow, yellow] },
+  ],
+};
+
+const purpleTriangle: Model = {
+  verts: [
+    [14, 4, 0],
+    [14, 2, 0],
+    [-2, 0, 3],
+  ],
+  tris: [
+    { verts: [0, 1, 2], color: [purple, purple, purple] },
+  ],
+};
 
 function render() {
   const scene: Scene = [
     {
-      translation: [-6, 0, 5],
-      scale: [1, 1, 1],
-      rotation: [0, 0, 0],
-      model: cube,
+      translation: [0, 0, 0],
+      scale: [0.1, 0.1, 0.1],
+      rotation: [0, t / 3, 0],
+      model: cyanTriangle,
+    },
+    {
+      translation: [0, 0, 0],
+      scale: [0.1, 0.1, 0.1],
+      rotation: [0, t / 3, 0],
+      model: purpleTriangle,
+    },
+    {
+      translation: [0, 0, 0],
+      scale: [0.1, 0.1, 0.1],
+      rotation: [0, t / 3, 0],
+      model: yellowTriangle,
     },
   ];
 
@@ -150,20 +227,33 @@ function render() {
 
     const camTransformed = translated.map((v) => {
       const camTranslated = vecSub(v, cam.translation);
-      const m = rotationVectorToMatrix(cam.rotation);
+      const fixedCam: Vector3 = [
+        -cam.rotation[0],
+        +cam.rotation[1],
+        -cam.rotation[2],
+      ]
+      const m = rotationVectorToMatrix(fixedCam);
       const mTransposed = matTranspose(m);
       const camRotated = matMultVec(mTransposed, camTranslated).map((x) => x[0]) as Vector3;
       return camRotated;
     });
 
-    const projected = camTransformed.map(project);
+    const unprojected = camTransformed;
+    const projected = unprojected.map(project);
 
     obj.model.tris.forEach((t) => {
-      const pvX = projected[t.verts[0]];
-      const pvY = projected[t.verts[1]];
-      const pvZ = projected[t.verts[2]];
+      const pvA = projected[t.verts[0]];
+      const pvB = projected[t.verts[1]];
+      const pvC = projected[t.verts[2]];
 
-      drawWireframeTriangle(pvX, pvY, pvZ, t.color);
+      drawFilledTriangle(
+        pvA,
+        pvB,
+        pvC,
+        { z: unprojected[t.verts[0]][2], color: t.color[0]},
+        { z: unprojected[t.verts[1]][2], color: t.color[1]},
+        { z: unprojected[t.verts[2]][2], color: t.color[2]},
+      );
     });
   });
 }
@@ -256,9 +346,9 @@ function drawFilledTriangle(
   p1: Vector2,
   p2: Vector2,
   p3: Vector2,
-  color1: Vector3,
-  color2: Vector3 = color1,
-  color3: Vector3 = color1,
+  vertAtrr1: VertAttribute,
+  vertAtrr2: VertAttribute,
+  vertAtrr3: VertAttribute,
 ) {
   const [bbMin, bbMax] = getBoundingBox([p1, p2, p3]);
 
@@ -267,28 +357,63 @@ function drawFilledTriangle(
       const [isIn, proportions] = isPointInTriangle([x, y], p1, p2, p3);
 
       if (isIn) {
-        let color: Vector3;
+        const color = getInterpolatedVertVector(
+          vertAtrr1.color,
+          vertAtrr2.color,
+          vertAtrr3.color,
+          proportions,
+        );
+        const z = getInterpolatedVertNumber(
+          vertAtrr1.z,
+          vertAtrr2.z,
+          vertAtrr3.z,
+          proportions,
+        );
 
-        if (color1 === color2 && color2 === color3) {
-          color = color1;
-        } else {
-          const tempColor: Vector3 = [
-            interpolate(color1[0], color2[0], proportions[1]),
-            interpolate(color1[1], color2[1], proportions[1]),
-            interpolate(color1[2], color2[2], proportions[1]),
-          ];
+        const zFrac = 1 / z;
+        const zBuffIndex = x + (imageData.height - 1 - y) * imageData.width;
 
-          color = [
-            interpolate(tempColor[0], color3[0], proportions[0]),
-            interpolate(tempColor[1], color3[1], proportions[0]),
-            interpolate(tempColor[2], color3[2], proportions[0]),
-          ];
+        if (zFrac > zBuffer[zBuffIndex]) {
+          setPixel(x, y, color);
+          zBuffer[zBuffIndex] = zFrac;
         }
-
-        setPixel(x, y, color);
       }
     }
   }
+}
+
+function getInterpolatedVertNumber(
+  num1: number,
+  num2: number,
+  num3: number,
+  proportions: Vector3,
+): number {
+  const tempNum: number = interpolate(num1, num2, proportions[1]);
+
+  const num: number = interpolate(tempNum, num3, proportions[0]);
+
+  return num;
+}
+
+function getInterpolatedVertVector(
+  vec1: Vector3,
+  vec2: Vector3,
+  vec3: Vector3,
+  proportions: Vector3,
+): Vector3 {
+  const tempVec: Vector3 = [
+    interpolate(vec1[0], vec2[0], proportions[1]),
+    interpolate(vec1[1], vec2[1], proportions[1]),
+    interpolate(vec1[2], vec2[2], proportions[1]),
+  ];
+
+  const vec: Vector3 = [
+    interpolate(tempVec[0], vec3[0], proportions[0]),
+    interpolate(tempVec[1], vec3[1], proportions[0]),
+    interpolate(tempVec[2], vec3[2], proportions[0]),
+  ];
+
+  return vec;
 }
 
 // @ts-ignore
