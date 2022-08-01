@@ -1,5 +1,9 @@
 import "./index.css";
 
+const DRAW_WIREFRAME = false;
+const DRAW_Z_BUFFER = false;
+const DRAW_MESH = true;
+
 type Vector2 = [number, number];
 type Vector3 = [number, number, number];
 type Matrix3x3 = [Vector3, Vector3, Vector3];
@@ -9,7 +13,7 @@ const ctx = canvas.getContext("2d")!;
 
 const rect = ctx.canvas.getBoundingClientRect();
 const dpr = window.devicePixelRatio ?? 1;
-const renderScale = 1 / 2;
+const renderScale = 1 / 4;
 canvas.width = Math.round(rect.width * dpr * renderScale);
 canvas.height = Math.round(rect.height * dpr * renderScale);
 ctx.scale(dpr, dpr);
@@ -256,31 +260,45 @@ function render() {
     const unprojected = camTransformed;
     const projected = unprojected.map(project);
 
-    obj.model.tris.forEach((t) => {
-      const pvA = projected[t.verts[0]];
-      const pvB = projected[t.verts[1]];
-      const pvC = projected[t.verts[2]];
+    if (DRAW_MESH) {
+      obj.model.tris.forEach((t) => {
+        const pvA = projected[t.verts[0]];
+        const pvB = projected[t.verts[1]];
+        const pvC = projected[t.verts[2]];
 
-      drawFilledTriangle(
-        pvA,
-        pvB,
-        pvC,
-        { z: unprojected[t.verts[0]][2], color: t.color[0]},
-        { z: unprojected[t.verts[1]][2], color: t.color[1]},
-        { z: unprojected[t.verts[2]][2], color: t.color[2]},
-      );
-    });
+        drawFilledTriangle(
+          pvA,
+          pvB,
+          pvC,
+          { z: unprojected[t.verts[0]][2], color: t.color[0]},
+          { z: unprojected[t.verts[1]][2], color: t.color[1]},
+          { z: unprojected[t.verts[2]][2], color: t.color[2]},
+        );
+      });
+    }
 
-    obj.model.tris.forEach((t) => {
-      const p1 = projected[t.verts[0]];
-      const p2 = projected[t.verts[1]];
-      const p3 = projected[t.verts[2]];
+    if (DRAW_WIREFRAME) {
+      obj.model.tris.forEach((t) => {
+        const p1 = projected[t.verts[0]];
+        const p2 = projected[t.verts[1]];
+        const p3 = projected[t.verts[2]];
 
-      drawLine(p1, p2, white);
-      drawLine(p2, p3, white);
-      drawLine(p1, p3, white);
-    });
+        drawLine(p1, p2, white);
+        drawLine(p2, p3, white);
+        drawLine(p1, p3, white);
+      });
+    }
   });
+
+  if (DRAW_Z_BUFFER) {
+    for (let i = 0; i < zBuffer.length; i++) {
+      const x = i % imageData.width;
+      const y = Math.floor(i / imageData.width);
+      const color = interpolate(0, 255, zBuffer[i]);
+
+      setPixel(x, y, [color, color, color]);
+    }
+  }
 }
 
 function project(p: Vector3): Vector2 {
