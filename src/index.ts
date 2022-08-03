@@ -212,7 +212,7 @@ function render() {
     {
       translation: [0, 0, 0],
       scale: [1, 1, 1],
-      rotation: [t, t, t],
+      rotation: [t / 4, t / 4, t / 4],
       model: cube,
     },
     /*
@@ -377,11 +377,11 @@ function isPointInTriangle(
 
   const isIn = Math.abs(areaABC - (areaPBC + areaAPC + areaABP)) <= margin;
 
-  const proportionA = areaABP / areaABC;
-  const proportionB = areaAPC / areaABC;
-  const proportionC = areaPBC / areaABC;
+  const aPrime = areaPBC / areaABC;
+  const bPrime = areaAPC / areaABC;
+  const cPrime = areaABP / areaABC;
 
-  return [isIn, [proportionA, proportionB, proportionC]];
+  return [isIn, [aPrime, bPrime, cPrime]];
 }
 
 // @ts-ignore
@@ -425,38 +425,46 @@ function drawFilledTriangle(
   }
 }
 
+function clamp(
+  x: number,
+  min: number,
+  max: number,
+): number {
+  return Math.max(Math.min(x, max), min);
+}
+
 function getInterpolatedVertNumber(
-  num1: number,
-  num2: number,
-  num3: number,
+  a: number,
+  b: number,
+  c: number,
   proportions: Vector3,
 ): number {
-  const tempNum: number = interpolate(num1, num2, proportions[1]);
+  const clampedPropA = Math.min(proportions[0], 0.99999);
+  const clampedPropB = Math.min(proportions[1], 0.99999);
+  const clampedPropC = Math.min(proportions[2], 0.99999);
 
-  const num: number = interpolate(tempNum, num3, proportions[0]);
-
-  return num;
+  return (
+    clampedPropA * a +
+    clampedPropB * b +
+    clampedPropC * c
+  ) / (
+    clampedPropA +
+    clampedPropB +
+    clampedPropC
+  );
 }
 
 function getInterpolatedVertVector(
-  vec1: Vector3,
-  vec2: Vector3,
-  vec3: Vector3,
+  vecA: Vector3,
+  vecB: Vector3,
+  vecC: Vector3,
   proportions: Vector3,
 ): Vector3 {
-  const tempVec: Vector3 = [
-    interpolate(vec1[0], vec2[0], proportions[1]),
-    interpolate(vec1[1], vec2[1], proportions[1]),
-    interpolate(vec1[2], vec2[2], proportions[1]),
+  return [
+    getInterpolatedVertNumber(vecA[0], vecB[0], vecC[0], proportions),
+    getInterpolatedVertNumber(vecA[1], vecB[1], vecC[1], proportions),
+    getInterpolatedVertNumber(vecA[2], vecB[2], vecC[2], proportions),
   ];
-
-  const vec: Vector3 = [
-    interpolate(tempVec[0], vec3[0], proportions[0]),
-    interpolate(tempVec[1], vec3[1], proportions[0]),
-    interpolate(tempVec[2], vec3[2], proportions[0]),
-  ];
-
-  return vec;
 }
 
 // @ts-ignore
