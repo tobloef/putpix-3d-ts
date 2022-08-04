@@ -256,11 +256,11 @@ function render() {
     drawLine(project([0, 0, z]), project(uppperRight), white);
     drawLine(project([0, 0, z]), project(lowerRight), white);
 
-    const P0 = [lowerLeft, upperLeft, uppperRight];
-    const PL = [lowerLeft, upperLeft, camCenter];
-    const PT = [upperLeft, uppperRight, camCenter];
-    const PR = [uppperRight, lowerRight, camCenter];
-    const PB = [lowerRight, lowerLeft, camCenter];
+    const clipPlaneBackPoints = [lowerLeft, upperLeft, uppperRight];
+    const clipPlaneLeftPoints = [lowerLeft, upperLeft, camCenter];
+    const clipPlaneTopPoints = [upperLeft, uppperRight, camCenter];
+    const clipPlaneRightPoints = [uppperRight, lowerRight, camCenter];
+    const clipPlaneBottomPoints = [lowerRight, lowerLeft, camCenter];
   }
 
   scene.forEach((obj) => {
