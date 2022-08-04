@@ -34,7 +34,7 @@ let cam: {
   translation: Vector3,
   rotation: Vector3,
 } = {
-  translation: [0, 0, -5],
+  translation: [0, 0, -7],
   rotation: [0, 0, 0],
 }
 
@@ -124,10 +124,13 @@ type Model = {
   tris: Tri[]
 };
 
-type Obj = {
+type Transform = {
   translation: Vector3,
   rotation: Vector3,
   scale: Vector3,
+}
+
+type Obj = Transform & {
   model: Model,
 };
 
@@ -212,7 +215,7 @@ function render() {
     {
       translation: [0, 0, 0],
       scale: [1, 1, 1],
-      rotation: [t / 4, t / 4, t / 4],
+      rotation: [t / 4, t / 3, t / 3],
       model: cube,
     },
     /*
@@ -237,25 +240,34 @@ function render() {
     */
   ];
 
+  // TODO: Working on clipping
+  {
+    const z = 0.000001;
+
+    const lowerLeft = unproject([0, 0], z);
+    const upperLeft = unproject([0, imageData.height], z);
+    const uppperRight = unproject([imageData.width, imageData.height], z);
+    const lowerRight = unproject([imageData.width, 0], z);
+
+    const camCenter: Vector3 = [0, 0, 0];
+
+    drawLine(project([0, 0, z]), project(lowerLeft), white);
+    drawLine(project([0, 0, z]), project(upperLeft), white);
+    drawLine(project([0, 0, z]), project(uppperRight), white);
+    drawLine(project([0, 0, z]), project(lowerRight), white);
+
+    const P0 = [lowerLeft, upperLeft, uppperRight];
+    const PL = [lowerLeft, upperLeft, camCenter];
+    const PT = [upperLeft, uppperRight, camCenter];
+    const PR = [uppperRight, lowerRight, camCenter];
+    const PB = [lowerRight, lowerLeft, camCenter];
+  }
+
   scene.forEach((obj) => {
     const original = obj.model.verts;
 
-    const scaled = scale(original, obj.scale);
-    const rotated = rotate(scaled, obj.rotation);
-    const translated = translate(rotated, obj.translation);
-
-    const camTransformed = translated.map((v) => {
-      const camTranslated = vecSub(v, cam.translation);
-      const fixedCam: Vector3 = [
-        -cam.rotation[0],
-        +cam.rotation[1],
-        -cam.rotation[2],
-      ]
-      const m = rotationVectorToMatrix(fixedCam);
-      const mTransposed = matTranspose(m);
-      const camRotated = matMultVec(mTransposed, camTranslated).map((x) => x[0]) as Vector3;
-      return camRotated;
-    });
+    const transformed = original.map((v) => transform(v, obj));
+    const camTransformed = transformed.map(transformByCamera);
 
     const unprojected = camTransformed;
     const projected = unprojected.map(project);
@@ -301,6 +313,19 @@ function render() {
   }
 }
 
+function transformByCamera(v: Vector3) {
+  const camTranslated = vecSub(v, cam.translation);
+  const fixedCam: Vector3 = [
+    -cam.rotation[0],
+    +cam.rotation[1],
+    -cam.rotation[2],
+  ]
+  const m = rotationVectorToMatrix(fixedCam);
+  const mTransposed = matTranspose(m);
+  const camRotated = matMultVec(mTransposed, camTranslated).map((x) => x[0]) as Vector3;
+  return camRotated;
+}
+
 function project(p: Vector3): Vector2 {
   const ppy = (p[1] * projectionPlaneZ) / p[2];
   const ppx = (p[0] * projectionPlaneZ) / p[2];
@@ -311,21 +336,30 @@ function project(p: Vector3): Vector2 {
   return [cx, cy];
 }
 
-function translate(verts: Vector3[], translation: Vector3): Vector3[] {
-  return verts.map((v) => vecAdd(v, translation));
+function unproject(c: Vector2, z: number): Vector3 {
+  const [cx, cy] = c;
+
+  const ppx = ((cx - imageData.width / 2) * viewportSizeX) / imageData.width;
+  const ppy = ((cy - imageData.height / 2) * viewportSizeY) / imageData.height;
+
+  return [
+    (ppx * z) / projectionPlaneZ,
+    (ppy * z) / projectionPlaneZ,
+    z,
+  ];
 }
 
-function scale(verts: Vector3[], scale: Vector3): Vector3[] {
-  return verts.map((v) => vecMultVec(v, scale));
+function transform(v: Vector3, transform: Transform): Vector3 {
+  const scaled = vecMultVec(v, transform.scale);
+
+  const m = rotationVectorToMatrix(transform.rotation);
+  const rotated = matMultVec(m, scaled).map((x) => x[0]) as Vector3;
+
+  const translated = vecAdd(rotated, transform.translation);
+
+  return translated;
 }
 
-function rotate(verts: Vector3[], rotation: Vector3): Vector3[] {
-  return verts.map((v) => {
-    const m = rotationVectorToMatrix(rotation);
-
-    return matMultVec(m, v).map((x) => x[0]) as Vector3;
-  });
-}
 
 function rotationVectorToMatrix(rotation: Vector3) {
   const dX: number = degToRad(rotation[0]);
@@ -425,6 +459,7 @@ function drawFilledTriangle(
   }
 }
 
+// @ts-ignore
 function clamp(
   x: number,
   min: number,
