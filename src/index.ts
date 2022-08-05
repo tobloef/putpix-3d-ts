@@ -432,11 +432,13 @@ function drawFilledTriangle(
         );
 
         const zFrac = 1 / z;
-        const zBuffIndex = x + (imageData.height - 1 - y) * imageData.width;
+        const zBuffIndex = x + y * imageData.width;
 
         if (zFrac > zBuffer[zBuffIndex]) {
           setPixel(x, y, color);
-          zBuffer[zBuffIndex] = zFrac;
+          if (x >= 0 && y >= 0 && x < imageData.width && y < imageData.height) {
+            zBuffer[zBuffIndex] = zFrac;
+          }
         }
       }
     }
