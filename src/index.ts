@@ -1,7 +1,7 @@
 import "./index.css";
 
-const DRAW_WIREFRAME = false;
-const DRAW_Z_BUFFER = false;
+const DRAW_WIREFRAME = true;
+const DRAW_Z_BUFFER = true;
 const DRAW_MESH = true;
 
 type Vector2 = [number, number];
@@ -18,8 +18,7 @@ canvas.width = Math.round(rect.width * dpr * renderScale);
 canvas.height = Math.round(rect.height * dpr * renderScale);
 ctx.scale(dpr, dpr);
 
-// @ts-ignore
-let t = 0;
+let lastFrameTime = performance.now();
 
 const blackImageData = new ImageData(canvas.width, canvas.height);
 const imageData = new ImageData(canvas.width, canvas.height);
@@ -46,11 +45,14 @@ function update() {
   imageData.data.set(blackImageData.data);
   zBuffer.set(blankZBuffer);
 
-  render();
+  const newFrameTime = performance.now();
+  const dt = (newFrameTime - lastFrameTime) / 1000;
+
+  render(dt);
 
   ctx.putImageData(imageData, 0, 0);
 
-  t++;
+  lastFrameTime = newFrameTime;
 
   requestAnimationFrame(update);
 }
@@ -210,58 +212,40 @@ const purpleTriangle: Model = {
   ],
 };
 
-function render() {
-  const scene: Scene = [
-    {
-      translation: [0, 0, 0],
-      scale: [1, 1, 1],
-      rotation: [t / 4, t / 3, t / 3],
-      model: cube,
-    },
-    /*
-    {
-      translation: [0, 0, 0],
-      scale: [0.1, 0.1, 0.1],
-      rotation: [0, t / 3, 0],
-      model: cyanTriangle,
-    },
-    {
-      translation: [0, 0, 0],
-      scale: [0.1, 0.1, 0.1],
-      rotation: [0, t / 3, 0],
-      model: purpleTriangle,
-    },
-    {
-      translation: [0, 0, 0],
-      scale: [0.1, 0.1, 0.1],
-      rotation: [0, t / 3, 0],
-      model: yellowTriangle,
-    },
-    */
-  ];
+const scene: Scene = [
+  {
+    translation: [0, 0, 0],
+    scale: [1, 1, 1],
+    rotation: [0, 0, 0],
+    model: cube,
+  },
+  /*
+  {
+    translation: [0, 0, 0],
+    scale: [0.1, 0.1, 0.1],
+    rotation: [0, t / 3, 0],
+    model: cyanTriangle,
+  },
+  {
+    translation: [0, 0, 0],
+    scale: [0.1, 0.1, 0.1],
+    rotation: [0, t / 3, 0],
+    model: purpleTriangle,
+  },
+  {
+    translation: [0, 0, 0],
+    scale: [0.1, 0.1, 0.1],
+    rotation: [0, t / 3, 0],
+    model: yellowTriangle,
+  },
+  */
+];
+
+function render(dt: number) {
+  scene[0].rotation = vecAdd(scene[0].rotation, vecMult([dt, 0, 0], 100));
 
   // TODO: Working on clipping
-  {
-    const z = 0.000001;
 
-    const lowerLeft = unproject([0, 0], z);
-    const upperLeft = unproject([0, imageData.height], z);
-    const uppperRight = unproject([imageData.width, imageData.height], z);
-    const lowerRight = unproject([imageData.width, 0], z);
-
-    const camCenter: Vector3 = [0, 0, 0];
-
-    drawLine(project([0, 0, z]), project(lowerLeft), white);
-    drawLine(project([0, 0, z]), project(upperLeft), white);
-    drawLine(project([0, 0, z]), project(uppperRight), white);
-    drawLine(project([0, 0, z]), project(lowerRight), white);
-
-    const clipPlaneBackPoints = [lowerLeft, upperLeft, uppperRight];
-    const clipPlaneLeftPoints = [lowerLeft, upperLeft, camCenter];
-    const clipPlaneTopPoints = [upperLeft, uppperRight, camCenter];
-    const clipPlaneRightPoints = [uppperRight, lowerRight, camCenter];
-    const clipPlaneBottomPoints = [lowerRight, lowerLeft, camCenter];
-  }
 
   scene.forEach((obj) => {
     const original = obj.model.verts;
@@ -313,19 +297,6 @@ function render() {
   }
 }
 
-function transformByCamera(v: Vector3) {
-  const camTranslated = vecSub(v, cam.translation);
-  const fixedCam: Vector3 = [
-    -cam.rotation[0],
-    +cam.rotation[1],
-    -cam.rotation[2],
-  ]
-  const m = rotationVectorToMatrix(fixedCam);
-  const mTransposed = matTranspose(m);
-  const camRotated = matMultVec(mTransposed, camTranslated).map((x) => x[0]) as Vector3;
-  return camRotated;
-}
-
 function project(p: Vector3): Vector2 {
   const ppy = (p[1] * projectionPlaneZ) / p[2];
   const ppx = (p[0] * projectionPlaneZ) / p[2];
@@ -360,6 +331,19 @@ function transform(v: Vector3, transform: Transform): Vector3 {
   return translated;
 }
 
+function transformByCamera(v: Vector3) {
+  const camTranslated = vecSub(v, cam.translation);
+  // TODO: Why is this necessary?
+  const fixedRotation: Vector3 = [
+    -cam.rotation[0],
+    +cam.rotation[1],
+    -cam.rotation[2],
+  ]
+  const m = rotationVectorToMatrix(fixedRotation);
+  const mTransposed = matTranspose(m);
+  const camRotated = matMultVec(mTransposed, camTranslated).map((x) => x[0]) as Vector3;
+  return camRotated;
+}
 
 function rotationVectorToMatrix(rotation: Vector3) {
   const dX: number = degToRad(rotation[0]);
