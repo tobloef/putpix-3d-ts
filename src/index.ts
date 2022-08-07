@@ -1,7 +1,7 @@
 import "./index.css";
 
-const DRAW_WIREFRAME = true;
-const DRAW_Z_BUFFER = true;
+const DRAW_WIREFRAME = false;
+const DRAW_Z_BUFFER = false;
 const DRAW_MESH = true;
 
 type Vector2 = [number, number];
@@ -29,14 +29,6 @@ const viewportSizeX = imageData.width / imageData.height;
 const viewportSizeY = 1;
 const projectionPlaneZ = 1;
 
-let cam: {
-  translation: Vector3,
-  rotation: Vector3,
-} = {
-  translation: [0, 0, -7],
-  rotation: [0, 0, 0],
-}
-
 function start() {
   update();
 }
@@ -59,84 +51,6 @@ function update() {
 
 const moveSens = 0.5;
 const rotateSens = 5;
-
-window.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowUp") {
-    e.preventDefault();
-    const m = rotationVectorToMatrix(cam.rotation);
-    const camRotated = matMultVec(m, [0, 0, moveSens]).map((x) => x[0]) as Vector3;
-    cam.translation = vecAdd(cam.translation, camRotated);
-  }
-  if (e.key === "ArrowDown") {
-    e.preventDefault();
-    const m = rotationVectorToMatrix(cam.rotation);
-    const camRotated = matMultVec(m, [0, 0, moveSens]).map((x) => x[0]) as Vector3;
-    cam.translation = vecSub(cam.translation, camRotated);
-  }
-  if (e.key === "ArrowLeft") {
-    e.preventDefault();
-    const m = rotationVectorToMatrix(cam.rotation);
-    const camRotated = matMultVec(m, [moveSens, 0, 0]).map((x) => x[0]) as Vector3;
-    cam.translation = vecSub(cam.translation, camRotated);
-  }
-  if (e.key === "ArrowRight") {
-    e.preventDefault();
-    const m = rotationVectorToMatrix(cam.rotation);
-    const camRotated = matMultVec(m, [moveSens, 0, 0]).map((x) => x[0]) as Vector3;
-    cam.translation = vecAdd(cam.translation, camRotated);
-  }
-  if (e.key === "w") {
-    e.preventDefault();
-    cam.rotation[0] += rotateSens;
-  }
-  if (e.key === "s") {
-    e.preventDefault();
-    cam.rotation[0] -= rotateSens;
-  }
-  if (e.key === "a") {
-    e.preventDefault();
-    cam.rotation[1] -= rotateSens;
-  }
-  if (e.key === "d") {
-    e.preventDefault();
-    cam.rotation[1] += rotateSens;
-  }
-  if (e.key === "e") {
-    e.preventDefault();
-    cam.rotation[2] += rotateSens;
-  }
-  if (e.key === "q") {
-    e.preventDefault();
-    cam.rotation[2] -= rotateSens;
-  }
-})
-
-type VertAttribute = {
-  color: Vector3,
-  z: number,
-}
-
-type Tri = {
-  verts: [number, number, number],
-  color: [Vector3, Vector3, Vector3]
-};
-
-type Model = {
-  verts: Vector3[],
-  tris: Tri[]
-};
-
-type Transform = {
-  translation: Vector3,
-  rotation: Vector3,
-  scale: Vector3,
-}
-
-type Obj = Transform & {
-  model: Model,
-};
-
-type Scene = Obj[];
 
 const str = 0.5;
 const red: Vector3 = vecMult([255, 0, 0], str );
@@ -214,38 +128,119 @@ const purpleTriangle: Model = {
 
 const scene: Scene = [
   {
-    translation: [0, 0, 0],
+    translation: [0, 0, 5],
     scale: [1, 1, 1],
     rotation: [0, 0, 0],
     model: cube,
   },
-  /*
-  {
-    translation: [0, 0, 0],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, t / 3, 0],
-    model: cyanTriangle,
-  },
-  {
-    translation: [0, 0, 0],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, t / 3, 0],
-    model: purpleTriangle,
-  },
-  {
-    translation: [0, 0, 0],
-    scale: [0.1, 0.1, 0.1],
-    rotation: [0, t / 3, 0],
-    model: yellowTriangle,
-  },
-  */
 ];
 
+let cam: {
+  translation: Vector3,
+  rotation: Vector3,
+} = {
+  translation: [0, 0, 0],
+  rotation: [0, 0, 0],
+}
+
+window.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowUp") {
+    e.preventDefault();
+    const m = rotationVectorToMatrix(cam.rotation);
+    const camRotated = matMultVec(m, [0, 0, moveSens]).map((x) => x[0]) as Vector3;
+    cam.translation = vecAdd(cam.translation, camRotated);
+  }
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    const m = rotationVectorToMatrix(cam.rotation);
+    const camRotated = matMultVec(m, [0, 0, moveSens]).map((x) => x[0]) as Vector3;
+    cam.translation = vecSub(cam.translation, camRotated);
+  }
+  if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    const m = rotationVectorToMatrix(cam.rotation);
+    const camRotated = matMultVec(m, [moveSens, 0, 0]).map((x) => x[0]) as Vector3;
+    cam.translation = vecSub(cam.translation, camRotated);
+  }
+  if (e.key === "ArrowRight") {
+    e.preventDefault();
+    const m = rotationVectorToMatrix(cam.rotation);
+    const camRotated = matMultVec(m, [moveSens, 0, 0]).map((x) => x[0]) as Vector3;
+    cam.translation = vecAdd(cam.translation, camRotated);
+  }
+  if (e.key === "w") {
+    e.preventDefault();
+    cam.rotation[0] += rotateSens;
+  }
+  if (e.key === "s") {
+    e.preventDefault();
+    cam.rotation[0] -= rotateSens;
+  }
+  if (e.key === "a") {
+    e.preventDefault();
+    cam.rotation[1] -= rotateSens;
+  }
+  if (e.key === "d") {
+    e.preventDefault();
+    cam.rotation[1] += rotateSens;
+  }
+  if (e.key === "e") {
+    e.preventDefault();
+    cam.rotation[2] += rotateSens;
+  }
+  if (e.key === "q") {
+    e.preventDefault();
+    cam.rotation[2] -= rotateSens;
+  }
+
+
+  if (e.key === "i") {
+    e.preventDefault();
+    scene[0].rotation[0] += rotateSens;
+  }
+  if (e.key === "j") {
+    e.preventDefault();
+    scene[0].rotation[1] += rotateSens;
+  }
+  if (e.key === "k") {
+    e.preventDefault();
+    scene[0].rotation[0] -= rotateSens;
+  }
+  if (e.key === "l") {
+    e.preventDefault();
+    scene[0].rotation[1] -= rotateSens;
+  }
+})
+
+type VertAttribute = {
+  color: Vector3,
+  z: number,
+}
+
+type Tri = {
+  verts: [number, number, number],
+  color: [Vector3, Vector3, Vector3]
+};
+
+type Model = {
+  verts: Vector3[],
+  tris: Tri[]
+};
+
+type Transform = {
+  translation: Vector3,
+  rotation: Vector3,
+  scale: Vector3,
+}
+
+type Obj = Transform & {
+  model: Model,
+};
+
+type Scene = Obj[];
+
 function render(dt: number) {
-  scene[0].rotation = vecAdd(scene[0].rotation, vecMult([dt, 0, 0], 100));
-
-  // TODO: Working on clipping
-
+  scene[0].rotation = vecAdd(scene[0].rotation, [dt * 20, dt * 20, dt * 20]);
 
   scene.forEach((obj) => {
     const original = obj.model.verts;
@@ -307,6 +302,7 @@ function project(p: Vector3): Vector2 {
   return [cx, cy];
 }
 
+// @ts-ignore
 function unproject(c: Vector2, z: number): Vector3 {
   const [cx, cy] = c;
 
@@ -333,13 +329,7 @@ function transform(v: Vector3, transform: Transform): Vector3 {
 
 function transformByCamera(v: Vector3) {
   const camTranslated = vecSub(v, cam.translation);
-  // TODO: Why is this necessary?
-  const fixedRotation: Vector3 = [
-    -cam.rotation[0],
-    +cam.rotation[1],
-    -cam.rotation[2],
-  ]
-  const m = rotationVectorToMatrix(fixedRotation);
+  const m = rotationVectorToMatrix(cam.rotation);
   const mTransposed = matTranspose(m);
   const camRotated = matMultVec(mTransposed, camTranslated).map((x) => x[0]) as Vector3;
   return camRotated;
@@ -367,7 +357,7 @@ function rotationVectorToMatrix(rotation: Vector3) {
     [0, 0, 1],
   ];
 
-  const mXYZ: Matrix3x3 = matMultMat(matMultMat(mX, mY) as Matrix3x3, mZ) as Matrix3x3;
+  const mXYZ: Matrix3x3 = matMultMat(matMultMat(mY, mX) as Matrix3x3, mZ) as Matrix3x3;
 
   return mXYZ;
 }
