@@ -28,6 +28,7 @@ import {
 } from "./transform";
 import monumentValley from "./models/monument_valley";
 import cube from "./models/cube";
+import rat from "./models/rat";
 
 const DRAW_WIREFRAME = false;
 const DRAW_Z_BUFFER = false;
@@ -80,18 +81,18 @@ const scene: Scene = [
       scale: [1, 1, 1],
       rotation: [0, 0, 0],
     },
-    model: cube,
+    model: rat,
   },
 ];
 
 let cam: Transform = {
-  translation: [-30, 5, 0],
-  rotation: [0, 90, 0],
+  translation: [-12, 2, 0],
+  rotation: [10, 90, 0],
   scale: [1, 1, 1],
 }
 
 function render(dt: number) {
-  scene[0].transform.rotation = vecAdd(scene[0].transform.rotation, vecMult([0, 0, 0], 100));
+  scene[0].transform.rotation = vecAdd(scene[0].transform.rotation, vecMult([0, dt, 0], 100));
 
   scene.forEach((obj) => {
     const originalTris = obj.model.tris;

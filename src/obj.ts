@@ -32,26 +32,24 @@ export function parseObjFile(objFileContents: string): Model {
       return mappedVert;
     }))
     .map((triVerts): Matrix3x3[] => {
-      if (triVerts.length === 5) {
-        return [
-          [triVerts[0], triVerts[1], triVerts[2]] as Matrix3x3,
-          [triVerts[0], triVerts[2], triVerts[3]] as Matrix3x3,
-          [triVerts[0], triVerts[3], triVerts[4]] as Matrix3x3,
-        ];
-      } else if (triVerts.length === 4) {
-        return [
-          [triVerts[0], triVerts[1], triVerts[2]] as Matrix3x3,
-          [triVerts[0], triVerts[2], triVerts[3]] as Matrix3x3,
-        ];
-      } else {
-        return [
-          [triVerts[0], triVerts[1], triVerts[2]] as Matrix3x3
-        ];
+      const triCount = triVerts.length - 2;
+      const newTris: Matrix3x3[] = [];
+
+      if (triCount < 1) {
+        return [];
       }
+
+      for (let i = 0; i < triCount; i++) {
+        newTris.push([
+          triVerts[0],
+          triVerts[1 + i],
+          triVerts[2 + i],
+        ]);
+      }
+
+      return newTris;
     })
     .flat();
-
-  console.debug(tris)
 
   const coloredTris: Tri[] = tris.map((t) => {
     const randomColor: Vector3 = [
