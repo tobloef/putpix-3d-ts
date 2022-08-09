@@ -26,9 +26,8 @@ import {
   transform,
   transformByCamera,
 } from "./transform";
-import monumentValley from "./models/monument_valley";
-import cube from "./models/cube";
-import rat from "./models/rat";
+import { parseObjFile } from "./obj";
+import loadFile from "./loadFile";
 
 const DRAW_WIREFRAME = false;
 const DRAW_Z_BUFFER = false;
@@ -51,7 +50,9 @@ const imageData = new ImageData(canvas.width, canvas.height);
 const blankZBuffer = new Float64Array(canvas.width * canvas.height);
 const zBuffer = Float64Array.from(blankZBuffer);
 
-function start() {
+async function start() {
+  scene[0].model = parseObjFile(await loadFile("./models/rat.obj"));
+
   update();
 }
 
@@ -81,7 +82,7 @@ const scene: Scene = [
       scale: [1, 1, 1],
       rotation: [0, 0, 0],
     },
-    model: rat,
+    model: null,
   },
 ];
 
@@ -95,6 +96,10 @@ function render(dt: number) {
   scene[0].transform.rotation = vecAdd(scene[0].transform.rotation, vecMult([0, dt, 0], 100));
 
   scene.forEach((obj) => {
+    if (obj.model === null) {
+      return;
+    }
+
     const originalTris = obj.model.tris;
 
     const transformedTris: Tri[] = originalTris.map((t): Tri => ({

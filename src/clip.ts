@@ -31,12 +31,16 @@ export function clipTris(tris: Tri[]): Tri[] | null {
     if (negativeIndices.length === 0) {
       newTris.push(tri);
     } else if (negativeIndices.length === 1) {
+      // @ts-ignore
       const [posVertA, posVertB] = positiveIndices;
+      // @ts-ignore
       const [negVert] = negativeIndices;
 
       return;
     } else if (negativeIndices.length === 2) {
+      // @ts-ignore
       const [posVert] = positiveIndices;
+      // @ts-ignore
       const [negVertA, negVertB] = negativeIndices;
 
       return;

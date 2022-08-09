@@ -31,7 +31,7 @@ export type Transform = {
 }
 
 export type Obj = {
-  model: Model,
+  model: Model | null,
   transform: Transform,
 };
 
