@@ -176,8 +176,8 @@ const scene: Scene = [
 ];
 
 let cam: Transform = {
-  translation: [0, 0, 0],
-  rotation: [0, 0, 0],
+  translation: [0, 7, -10],
+  rotation: [-30, 0, 0],
   scale: [1, 1, 1],
 }
 
@@ -277,7 +277,66 @@ type Obj = {
 
 type Scene = Obj[];
 
+async function loadFileContents(path: string): Promise<string> {
+  const response = await fetch(path);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load file "${path}".`);
+  }
+
+  return await response.text();
+}
+
+function parseObjFile(objFileContents: string): Model {
+  const lines = objFileContents.split(/\r?\n/);
+
+  const verts = lines
+    .filter((line) => line.startsWith("v"))
+    .map((line) => line.slice(2))
+    .map((line) => line.split(" "))
+    .map((parts) => parts.map(Number) as Vector3);
+
+  const tris = lines
+    .filter((line) => line.startsWith("f"))
+    .map((line) => line.slice(2))
+    .map((line) => line.split(" "))
+    .map((part) => part.map(Number))
+    .map((indexes) => indexes.map((i) => i - 1)) as [number, number, number][];
+
+  const vertMappedTris = tris.map((triIndex) => triIndex.map((i) => {
+    const mappedVert = verts[i];
+
+    if (mappedVert == null) {
+      throw new Error(`Failed to map vertex index to vert (vert index: ${i}).`);
+    }
+
+    return mappedVert;
+  }) as [Vector3, Vector3, Vector3]);
+
+  const coloredTris: Tri[] = tris.map((t) => ({ verts: t, color: [white, white, white] }))
+
+  return {
+    tris: coloredTris,
+    verts,
+  };
+}
+
+const teapot = parseObjFile(await loadFileContents("./teapot.obj"));
+
+const scene: Scene = [
+  {
+    transform: {
+      translation: [0, 0, 0],
+      scale: [1, 1, 1],
+      rotation: [0, 0, 0],
+    },
+    model: teapot,
+  },
+];
+
 function render(_dt: number) {
+  scene[0].rotation = vecAdd(scene[0].rotation, vecMult([0, dt, 0], 100));
+
   scene.forEach((obj) => {
     const originalTris = obj.model.tris;
 
