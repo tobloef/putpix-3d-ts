@@ -13,7 +13,7 @@ const ctx = canvas.getContext("2d")!;
 
 const rect = ctx.canvas.getBoundingClientRect();
 const dpr = window.devicePixelRatio ?? 1;
-const renderScale = 1 / 4;
+const renderScale = 1 / 2;
 canvas.width = Math.round(rect.width * dpr * renderScale);
 canvas.height = Math.round(rect.height * dpr * renderScale);
 ctx.scale(dpr, dpr);
@@ -52,203 +52,7 @@ function update() {
 const moveSens = 0.5;
 const rotateSens = 5;
 
-const str = 0.5;
-const red: Vector3 = vecMult([255, 0, 0], str);
-const green: Vector3 = vecMult([0, 255, 0], str);
-const blue: Vector3 = vecMult([0, 0, 255], str);
-const yellow: Vector3 = vecMult([255, 255, 0], str);
-const purple: Vector3 = vecMult([255, 0, 255], str);
-const cyan: Vector3 = vecMult([0, 255, 255], str);
 const white: Vector3 = [255, 255, 255];
-// @ts-ignore
-const black: Vector3 = [0, 0, 0];
-
-const cube: Model = {
-  tris: [
-    {
-      verts: [
-        [+1, +1, +1],
-        [-1, +1, +1],
-        [-1, -1, +1],
-      ],
-      color: [red, red, red],
-    },
-    {
-      verts: [
-        [+1, +1, +1],
-        [-1, -1, +1],
-        [+1, -1, +1],
-      ],
-      color: [red, red, red],
-    },
-    {
-      verts: [
-        [+1, +1, -1],
-        [+1, +1, +1],
-        [+1, -1, +1],
-      ],
-      color: [green, green, green],
-    },
-    {
-      verts: [
-        [+1, +1, -1],
-        [+1, -1, +1],
-        [+1, -1, -1],
-      ],
-      color: [green, green, green],
-    },
-    {
-      verts: [
-        [-1, +1, -1],
-        [+1, +1, -1],
-        [+1, -1, -1],
-      ],
-      color: [blue, blue, blue],
-    },
-    {
-      verts: [
-        [-1, +1, -1],
-        [+1, -1, -1],
-        [-1, -1, -1],
-      ],
-      color: [blue, blue, blue],
-    },
-    {
-      verts: [
-        [-1, +1, +1],
-        [-1, +1, -1],
-        [-1, -1, -1],
-      ],
-      color: [yellow, yellow, yellow],
-    },
-    {
-      verts: [
-        [-1, +1, +1],
-        [-1, -1, -1],
-        [-1, -1, +1],
-      ],
-      color: [yellow, yellow, yellow],
-    },
-    {
-      verts: [
-        [+1, +1, -1],
-        [-1, +1, -1],
-        [-1, +1, +1],
-      ],
-      color: [purple, purple, purple],
-    },
-    {
-      verts: [
-        [+1, +1, -1],
-        [-1, +1, +1],
-        [+1, +1, +1],
-      ],
-      color: [purple, purple, purple],
-    },
-    {
-      verts: [
-        [-1, -1, +1],
-        [-1, -1, -1],
-        [+1, -1, -1],
-      ],
-      color: [cyan, cyan, cyan],
-    },
-    {
-      verts: [
-        [-1, -1, +1],
-        [+1, -1, -1],
-        [+1, -1, +1],
-      ],
-      color: [cyan, cyan, cyan],
-    },
-  ],
-};
-
-const scene: Scene = [
-  {
-    transform: {
-      translation: [0, 0, 5],
-      scale: [1, 1, 1],
-      rotation: [45, 45, 10],
-    },
-    model: cube,
-  },
-];
-
-let cam: Transform = {
-  translation: [0, 7, -10],
-  rotation: [-30, 0, 0],
-  scale: [1, 1, 1],
-}
-
-window.addEventListener("keydown", (e) => {
-  if (e.key === "ArrowUp") {
-    e.preventDefault();
-    const m = rotationVectorToMatrix(cam.rotation);
-    const camRotated = matMultVec(m, [0, 0, moveSens]).map((x) => x[0]) as Vector3;
-    cam.translation = vecAdd(cam.translation, camRotated);
-  }
-  if (e.key === "ArrowDown") {
-    e.preventDefault();
-    const m = rotationVectorToMatrix(cam.rotation);
-    const camRotated = matMultVec(m, [0, 0, moveSens]).map((x) => x[0]) as Vector3;
-    cam.translation = vecSub(cam.translation, camRotated);
-  }
-  if (e.key === "ArrowLeft") {
-    e.preventDefault();
-    const m = rotationVectorToMatrix(cam.rotation);
-    const camRotated = matMultVec(m, [moveSens, 0, 0]).map((x) => x[0]) as Vector3;
-    cam.translation = vecSub(cam.translation, camRotated);
-  }
-  if (e.key === "ArrowRight") {
-    e.preventDefault();
-    const m = rotationVectorToMatrix(cam.rotation);
-    const camRotated = matMultVec(m, [moveSens, 0, 0]).map((x) => x[0]) as Vector3;
-    cam.translation = vecAdd(cam.translation, camRotated);
-  }
-  if (e.key === "w") {
-    e.preventDefault();
-    cam.rotation[0] += rotateSens;
-  }
-  if (e.key === "s") {
-    e.preventDefault();
-    cam.rotation[0] -= rotateSens;
-  }
-  if (e.key === "a") {
-    e.preventDefault();
-    cam.rotation[1] -= rotateSens;
-  }
-  if (e.key === "d") {
-    e.preventDefault();
-    cam.rotation[1] += rotateSens;
-  }
-  if (e.key === "e") {
-    e.preventDefault();
-    cam.rotation[2] += rotateSens;
-  }
-  if (e.key === "q") {
-    e.preventDefault();
-    cam.rotation[2] -= rotateSens;
-  }
-
-
-  if (e.key === "i") {
-    e.preventDefault();
-    scene[0].transform.rotation[0] += rotateSens;
-  }
-  if (e.key === "j") {
-    e.preventDefault();
-    scene[0].transform.rotation[1] += rotateSens;
-  }
-  if (e.key === "k") {
-    e.preventDefault();
-    scene[0].transform.rotation[0] -= rotateSens;
-  }
-  if (e.key === "l") {
-    e.preventDefault();
-    scene[0].transform.rotation[1] -= rotateSens;
-  }
-})
 
 type VertAttribute = {
   color: Vector3,
@@ -301,27 +105,51 @@ function parseObjFile(objFileContents: string): Model {
     .map((line) => line.slice(2))
     .map((line) => line.split(" "))
     .map((part) => part.map(Number))
-    .map((indexes) => indexes.map((i) => i - 1)) as [number, number, number][];
+    .map((indexes) => indexes.map((i) => i - 1))
+    .map((triIndex) => triIndex.map((i) => {
+      const mappedVert = verts[i];
 
-  const vertMappedTris = tris.map((triIndex) => triIndex.map((i) => {
-    const mappedVert = verts[i];
+      if (mappedVert == null) {
+        throw new Error(`Failed to map vertex index to vert (vert index: ${i}).`);
+      }
 
-    if (mappedVert == null) {
-      throw new Error(`Failed to map vertex index to vert (vert index: ${i}).`);
-    }
+      return mappedVert;
+    }) as [Vector3, Vector3, Vector3]);
 
-    return mappedVert;
-  }) as [Vector3, Vector3, Vector3]);
-
-  const coloredTris: Tri[] = tris.map((t) => ({ verts: t, color: [white, white, white] }))
+  const coloredTris: Tri[] = tris.map((t) => {
+    const randomColor = [randomInt(0, 255), randomInt(0, 255), randomInt(0, 255)];
+    return ({verts: t, color: [randomColor, randomColor, randomColor]});
+  })
 
   return {
     tris: coloredTris,
-    verts,
   };
 }
 
+function randomInt(min: number, max: number) {
+  min = Math.ceil(min);
+  max = Math.floor(max + 1);
+  return Math.floor(Math.random() * (max - min) + min);
+}
+
 const teapot = parseObjFile(await loadFileContents("./teapot.obj"));
+
+const cube: Model = {
+  tris: [
+    {verts: [[+1, +1, +1], [-1, +1, +1], [-1, -1, +1]], color: [white, white, white]},
+    {verts: [[+1, +1, +1], [-1, -1, +1], [+1, -1, +1]], color: [white, white, white]},
+    {verts: [[+1, +1, -1], [+1, +1, +1], [+1, -1, +1]], color: [white, white, white]},
+    {verts: [[+1, +1, -1], [+1, -1, +1], [+1, -1, -1]], color: [white, white, white]},
+    {verts: [[-1, +1, -1], [+1, +1, -1], [+1, -1, -1]], color: [white, white, white]},
+    {verts: [[-1, +1, -1], [+1, -1, -1], [-1, -1, -1]], color: [white, white, white]},
+    {verts: [[-1, +1, +1], [-1, +1, -1], [-1, -1, -1]], color: [white, white, white]},
+    {verts: [[-1, +1, +1], [-1, -1, -1], [-1, -1, +1]], color: [white, white, white]},
+    {verts: [[+1, +1, -1], [-1, +1, -1], [-1, +1, +1]], color: [white, white, white]},
+    {verts: [[+1, +1, -1], [-1, +1, +1], [+1, +1, +1]], color: [white, white, white]},
+    {verts: [[-1, -1, +1], [-1, -1, -1], [+1, -1, -1]], color: [white, white, white]},
+    {verts: [[-1, -1, +1], [+1, -1, -1], [+1, -1, +1]], color: [white, white, white]},
+  ],
+};
 
 const scene: Scene = [
   {
@@ -334,8 +162,14 @@ const scene: Scene = [
   },
 ];
 
-function render(_dt: number) {
-  scene[0].rotation = vecAdd(scene[0].rotation, vecMult([0, dt, 0], 100));
+let cam: Transform = {
+  translation: [0, 7, -10],
+  rotation: [30, 0, 0],
+  scale: [1, 1, 1],
+}
+
+function render(dt: number) {
+  scene[0].transform.rotation = vecAdd(scene[0].transform.rotation, vecMult([0, dt, 0], 100));
 
   scene.forEach((obj) => {
     const originalTris = obj.model.tris;
@@ -387,7 +221,7 @@ function render(_dt: number) {
     for (let i = 0; i < zBuffer.length; i++) {
       const x = i % imageData.width;
       const y = Math.floor(i / imageData.width);
-      const color = interpolate(0, 255, zBuffer[i]);
+      const color = interpolate(0, 255, zBuffer[i] * 8);
 
       setPixel(x, y, [color, color, color]);
     }
@@ -444,7 +278,7 @@ type Plane = {
 
 const near: Plane = {
   // Distance from origin. Negative is "behind" the normal.
-  distance: -0.1,
+  distance: -0.5,
   // Pointing forward
   normal: [0, 0, 1],
 }
@@ -842,5 +676,74 @@ function matTranspose<T extends Matrix>(m: T): T {
     });
   }) as T;
 }
+
+window.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowUp") {
+    e.preventDefault();
+    const m = rotationVectorToMatrix(cam.rotation);
+    const camRotated = matMultVec(m, [0, 0, moveSens]).map((x) => x[0]) as Vector3;
+    cam.translation = vecAdd(cam.translation, camRotated);
+  }
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    const m = rotationVectorToMatrix(cam.rotation);
+    const camRotated = matMultVec(m, [0, 0, moveSens]).map((x) => x[0]) as Vector3;
+    cam.translation = vecSub(cam.translation, camRotated);
+  }
+  if (e.key === "ArrowLeft") {
+    e.preventDefault();
+    const m = rotationVectorToMatrix(cam.rotation);
+    const camRotated = matMultVec(m, [moveSens, 0, 0]).map((x) => x[0]) as Vector3;
+    cam.translation = vecSub(cam.translation, camRotated);
+  }
+  if (e.key === "ArrowRight") {
+    e.preventDefault();
+    const m = rotationVectorToMatrix(cam.rotation);
+    const camRotated = matMultVec(m, [moveSens, 0, 0]).map((x) => x[0]) as Vector3;
+    cam.translation = vecAdd(cam.translation, camRotated);
+  }
+  if (e.key === "w") {
+    e.preventDefault();
+    cam.rotation[0] -= rotateSens;
+  }
+  if (e.key === "s") {
+    e.preventDefault();
+    cam.rotation[0] += rotateSens;
+  }
+  if (e.key === "a") {
+    e.preventDefault();
+    cam.rotation[1] -= rotateSens;
+  }
+  if (e.key === "d") {
+    e.preventDefault();
+    cam.rotation[1] += rotateSens;
+  }
+  if (e.key === "e") {
+    e.preventDefault();
+    cam.rotation[2] += rotateSens;
+  }
+  if (e.key === "q") {
+    e.preventDefault();
+    cam.rotation[2] -= rotateSens;
+  }
+
+
+  if (e.key === "i") {
+    e.preventDefault();
+    scene[0].transform.rotation[0] += rotateSens;
+  }
+  if (e.key === "j") {
+    e.preventDefault();
+    scene[0].transform.rotation[1] += rotateSens;
+  }
+  if (e.key === "k") {
+    e.preventDefault();
+    scene[0].transform.rotation[0] -= rotateSens;
+  }
+  if (e.key === "l") {
+    e.preventDefault();
+    scene[0].transform.rotation[1] -= rotateSens;
+  }
+})
 
 start();
