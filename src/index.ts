@@ -53,94 +53,132 @@ const moveSens = 0.5;
 const rotateSens = 5;
 
 const str = 0.5;
-const red: Vector3 = vecMult([255, 0, 0], str );
-const green: Vector3 = vecMult([0, 255, 0], str );
-const blue: Vector3 = vecMult([0, 0, 255], str );
-const yellow: Vector3 = vecMult([255, 255, 0], str );
-const purple: Vector3 = vecMult([255, 0, 255], str );
-const cyan: Vector3 = vecMult([0, 255, 255], str );
+const red: Vector3 = vecMult([255, 0, 0], str);
+const green: Vector3 = vecMult([0, 255, 0], str);
+const blue: Vector3 = vecMult([0, 0, 255], str);
+const yellow: Vector3 = vecMult([255, 255, 0], str);
+const purple: Vector3 = vecMult([255, 0, 255], str);
+const cyan: Vector3 = vecMult([0, 255, 255], str);
 const white: Vector3 = [255, 255, 255];
 // @ts-ignore
 const black: Vector3 = [0, 0, 0];
 
 const cube: Model = {
-  verts: [
-    [+1, +1, +1],
-    [-1, +1, +1],
-    [-1, -1, +1],
-    [+1, -1, +1],
-    [+1, +1, -1],
-    [-1, +1, -1],
-    [-1, -1, -1],
-    [+1, -1, -1],
-  ],
   tris: [
-    {vertIndices: [0, 1, 2], color: [red, red, red]},
-    {vertIndices: [0, 2, 3], color: [red, red, red]},
-    {vertIndices: [4, 0, 3], color: [green, green, green]},
-    {vertIndices: [4, 3, 7], color: [green, green, green]},
-    {vertIndices: [5, 4, 7], color: [blue, blue, blue]},
-    {vertIndices: [5, 7, 6], color: [blue, blue, blue]},
-    {vertIndices: [1, 5, 6], color: [yellow, yellow, yellow]},
-    {vertIndices: [1, 6, 2], color: [yellow, yellow, yellow]},
-    {vertIndices: [4, 5, 1], color: [purple, purple, purple]},
-    {vertIndices: [4, 1, 0], color: [purple, purple, purple]},
-    {vertIndices: [2, 6, 7], color: [cyan, cyan, cyan]},
-    {vertIndices: [2, 7, 3], color: [cyan, cyan, cyan]},
-  ],
-};
-
-// @ts-ignore
-const cyanTriangle: Model = {
-  verts: [
-    [0, 0, 0],
-    [2, 0, 0],
-    [10, 10, 3],
-  ],
-  tris: [
-    { vertIndices: [0, 1, 2], color: [green, green, green] },
-  ],
-};
-
-// @ts-ignore
-const yellowTriangle: Model = {
-  verts: [
-    [6, 10, 0],
-    [8, 10, 0],
-    [12, 0, 3],
-  ],
-  tris: [
-    { vertIndices: [0, 1, 2], color: [yellow, yellow, yellow] },
-  ],
-};
-
-// @ts-ignore
-const purpleTriangle: Model = {
-  verts: [
-    [14, 4, 0],
-    [14, 2, 0],
-    [-2, 0, 3],
-  ],
-  tris: [
-    { vertIndices: [0, 1, 2], color: [red, red, red] },
+    {
+      verts: [
+        [+1, +1, +1],
+        [-1, +1, +1],
+        [-1, -1, +1],
+      ],
+      color: [red, red, red],
+    },
+    {
+      verts: [
+        [+1, +1, +1],
+        [-1, -1, +1],
+        [+1, -1, +1],
+      ],
+      color: [red, red, red],
+    },
+    {
+      verts: [
+        [+1, +1, -1],
+        [+1, +1, +1],
+        [+1, -1, +1],
+      ],
+      color: [green, green, green],
+    },
+    {
+      verts: [
+        [+1, +1, -1],
+        [+1, -1, +1],
+        [+1, -1, -1],
+      ],
+      color: [green, green, green],
+    },
+    {
+      verts: [
+        [-1, +1, -1],
+        [+1, +1, -1],
+        [+1, -1, -1],
+      ],
+      color: [blue, blue, blue],
+    },
+    {
+      verts: [
+        [-1, +1, -1],
+        [+1, -1, -1],
+        [-1, -1, -1],
+      ],
+      color: [blue, blue, blue],
+    },
+    {
+      verts: [
+        [-1, +1, +1],
+        [-1, +1, -1],
+        [-1, -1, -1],
+      ],
+      color: [yellow, yellow, yellow],
+    },
+    {
+      verts: [
+        [-1, +1, +1],
+        [-1, -1, -1],
+        [-1, -1, +1],
+      ],
+      color: [yellow, yellow, yellow],
+    },
+    {
+      verts: [
+        [+1, +1, -1],
+        [-1, +1, -1],
+        [-1, +1, +1],
+      ],
+      color: [purple, purple, purple],
+    },
+    {
+      verts: [
+        [+1, +1, -1],
+        [-1, +1, +1],
+        [+1, +1, +1],
+      ],
+      color: [purple, purple, purple],
+    },
+    {
+      verts: [
+        [-1, -1, +1],
+        [-1, -1, -1],
+        [+1, -1, -1],
+      ],
+      color: [cyan, cyan, cyan],
+    },
+    {
+      verts: [
+        [-1, -1, +1],
+        [+1, -1, -1],
+        [+1, -1, +1],
+      ],
+      color: [cyan, cyan, cyan],
+    },
   ],
 };
 
 const scene: Scene = [
   {
-    translation: [0, 0, 5],
-    scale: [1, 1, 1],
-    rotation: [45, 45, 10],
+    transform: {
+      translation: [0, 0, 5],
+      scale: [1, 1, 1],
+      rotation: [45, 45, 10],
+    },
     model: cube,
   },
 ];
 
-let cam: {
-  translation: Vector3,
-  rotation: Vector3,
-} = {
+let cam: Transform = {
   translation: [0, 0, 0],
   rotation: [0, 0, 0],
+  scale: [1, 1, 1],
 }
 
 window.addEventListener("keydown", (e) => {
@@ -196,19 +234,19 @@ window.addEventListener("keydown", (e) => {
 
   if (e.key === "i") {
     e.preventDefault();
-    scene[0].rotation[0] += rotateSens;
+    scene[0].transform.rotation[0] += rotateSens;
   }
   if (e.key === "j") {
     e.preventDefault();
-    scene[0].rotation[1] += rotateSens;
+    scene[0].transform.rotation[1] += rotateSens;
   }
   if (e.key === "k") {
     e.preventDefault();
-    scene[0].rotation[0] -= rotateSens;
+    scene[0].transform.rotation[0] -= rotateSens;
   }
   if (e.key === "l") {
     e.preventDefault();
-    scene[0].rotation[1] -= rotateSens;
+    scene[0].transform.rotation[1] -= rotateSens;
   }
 })
 
@@ -218,12 +256,11 @@ type VertAttribute = {
 }
 
 type Tri = {
-  vertIndices: [number, number, number],
+  verts: [Vector3, Vector3, Vector3],
   color: [Vector3, Vector3, Vector3]
 };
 
 type Model = {
-  verts: Vector3[],
   tris: Tri[],
 };
 
@@ -233,58 +270,56 @@ type Transform = {
   scale: Vector3,
 }
 
-type Obj = Transform & {
+type Obj = {
   model: Model,
+  transform: Transform,
 };
 
 type Scene = Obj[];
 
-function render(dt: number) {
+function render(_dt: number) {
   scene.forEach((obj) => {
-    const originalVerts = obj.model.verts;
     const originalTris = obj.model.tris;
 
-    const transformedVerts = originalVerts.map((v) => transform(v, obj));
-    const camTransformedVerts = transformedVerts.map(transformByCamera);
+    const transformedTris: Tri[] = originalTris.map((t): Tri => ({
+      ...t,
+      verts: t.verts.map((v): Vector3 => {
+        const transformed = transform(v, obj.transform);
+        const camTransformed = transformByCamera(transformed);
+        return camTransformed;
+      }) as [Vector3, Vector3, Vector3],
+    }));
 
-    const clippedModel = clipModel({
-      verts: camTransformedVerts,
-      tris: originalTris,
-    });
+    const clippedTris = clipTris(transformedTris);
 
-    if (clippedModel === null) {
+    if (clippedTris === null) {
       return;
     }
 
-    const unprojected = clippedModel.verts;
-    const projected = unprojected.map(project);
+    const projectedTris = clippedTris.map((tri) => ({
+      color: tri.color,
+      unprojectedVerts: tri.verts,
+      projectedVerts: tri.verts.map(project),
+    }));
 
     if (DRAW_MESH) {
-      clippedModel.tris.forEach((t) => {
-        const pvA = projected[t.vertIndices[0]];
-        const pvB = projected[t.vertIndices[1]];
-        const pvC = projected[t.vertIndices[2]];
-
+      projectedTris.forEach((t) => {
         drawFilledTriangle(
-          pvA,
-          pvB,
-          pvC,
-          { z: unprojected[t.vertIndices[0]][2], color: t.color[0]},
-          { z: unprojected[t.vertIndices[1]][2], color: t.color[1]},
-          { z: unprojected[t.vertIndices[2]][2], color: t.color[2]},
+          t.projectedVerts[0],
+          t.projectedVerts[1],
+          t.projectedVerts[2],
+          {z: t.unprojectedVerts[0][2], color: t.color[0]},
+          {z: t.unprojectedVerts[1][2], color: t.color[1]},
+          {z: t.unprojectedVerts[2][2], color: t.color[2]},
         );
       });
     }
 
     if (DRAW_WIREFRAME) {
-      clippedModel.tris.forEach((t) => {
-        const p1 = projected[t.vertIndices[0]];
-        const p2 = projected[t.vertIndices[1]];
-        const p3 = projected[t.vertIndices[2]];
-
-        drawLine(p1, p2, white);
-        drawLine(p2, p3, white);
-        drawLine(p1, p3, white);
+      projectedTris.forEach((t) => {
+        drawLine(t.projectedVerts[0], t.projectedVerts[1], white);
+        drawLine(t.projectedVerts[1], t.projectedVerts[2], white);
+        drawLine(t.projectedVerts[0], t.projectedVerts[2], white);
       });
     }
   });
@@ -350,31 +385,47 @@ type Plane = {
 
 const near: Plane = {
   // Distance from origin. Negative is "behind" the normal.
-  distance: -1,
+  distance: -0.1,
   // Pointing forward
   normal: [0, 0, 1],
 }
 
-// const distance: number = vecDot(near.normal, v) + near.distance;
 
-function clipModel(model: Model): Model | null {
-  const newModel: Model = { verts: [...model.verts], tris: [] };
+function clipTris(tris: Tri[]): Tri[] | null {
+  const newTris: Tri[] = [];
 
-  model.tris.forEach((tri) => {
-    const verts = tri.vertIndices.map((vi) => model.verts[vi]);
-    const dists = verts.map((v) => vecDot(near.normal, v) + near.distance);
+  tris.forEach((tri) => {
+    const dists = tri.verts.map((v) => vecDot(near.normal, v) + near.distance);
 
-    if (dists.every((d) => d > 0)) {
-      newModel.tris.push(tri);
-      return
-    }
+    let positiveIndices: number[] = [];
+    let negativeIndices: number[] = [];
 
-    if (dists.every((d) => d <= 0)) {
+    dists.forEach((d, i) => {
+      if (d <= 0) {
+        negativeIndices.push(i);
+      } else {
+        positiveIndices.push(i);
+      }
+    });
+
+    if (negativeIndices.length === 0) {
+      newTris.push(tri);
+    } else if (negativeIndices.length === 1) {
+      const [posVertA, posVertB] = positiveIndices;
+      const [negVert] = negativeIndices;
+
+      return;
+    } else if (negativeIndices.length === 2) {
+      const [posVert] = positiveIndices;
+      const [negVertA, negVertB] = negativeIndices;
+
+      return;
+    } else if (negativeIndices.length === 3) {
       return;
     }
   });
 
-  return newModel;
+  return newTris;
 }
 
 function rotationVectorToMatrix(rotation: Vector3) {
