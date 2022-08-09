@@ -6,7 +6,7 @@ import { vecDot } from "./math";
 
 const near: Plane = {
   // Distance from origin. Negative is "behind" the normal.
-  distance: -0.5,
+  distance: -0.1,
   // Pointing forward
   normal: [0, 0, 1],
 }

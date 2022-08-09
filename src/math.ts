@@ -162,38 +162,6 @@ export function isPointInTriangle(
   return [isIn, [aPrime, bPrime, cPrime]];
 }
 
-export function getBoundingBox(vertices: Vector2[]): [Vector2, Vector2] {
-  if (vertices.length === 0) {
-    return [
-      [0, 0],
-      [0, 0],
-    ];
-  }
-
-  let bbMin: Vector2 = [+Infinity, +Infinity];
-  let bbMax: Vector2 = [-Infinity, -Infinity];
-
-  for (const v of vertices) {
-    if (v[0] < bbMin[0]) {
-      bbMin[0] = v[0];
-    }
-    if (v[1] < bbMin[1]) {
-      bbMin[1] = v[1];
-    }
-    if (v[0] > bbMax[0]) {
-      bbMax[0] = v[0];
-    }
-    if (v[1] > bbMax[1]) {
-      bbMax[1] = v[1];
-    }
-  }
-
-  return [
-    [Math.floor(bbMin[0]), Math.floor(bbMin[1])],
-    [Math.ceil(bbMax[0]), Math.ceil(bbMax[1])],
-  ];
-}
-
 export function getInterpolatedVertVector(
   vecA: Vector3,
   vecB: Vector3,

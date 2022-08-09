@@ -6,7 +6,6 @@ import type {
   Vector3,
 
 } from "./types";
-import teapot from "./models/teapot";
 import { white } from "./colors";
 import {
   interpolate,
@@ -27,7 +26,8 @@ import {
   transform,
   transformByCamera,
 } from "./transform";
-import vehicles from "./models/vehicles";
+import monumentValley from "./models/monument_valley";
+import cube from "./models/cube";
 
 const DRAW_WIREFRAME = false;
 const DRAW_Z_BUFFER = false;
@@ -80,7 +80,7 @@ const scene: Scene = [
       scale: [1, 1, 1],
       rotation: [0, 0, 0],
     },
-    model: vehicles,
+    model: cube,
   },
 ];
 
@@ -91,7 +91,7 @@ let cam: Transform = {
 }
 
 function render(dt: number) {
-  scene[0].transform.rotation = vecAdd(scene[0].transform.rotation, vecMult([0, dt, 0], 100));
+  scene[0].transform.rotation = vecAdd(scene[0].transform.rotation, vecMult([0, 0, 0], 100));
 
   scene.forEach((obj) => {
     const originalTris = obj.model.tris;
