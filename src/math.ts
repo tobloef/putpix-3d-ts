@@ -14,6 +14,18 @@ export function interpolate(
   return start * (1 - proportion) + end * proportion;
 }
 
+export function interpolateVector<T extends Vector>(
+  vecStart: T,
+  vecEnd: T,
+  proportion: number
+): T {
+  return vecStart.map((vs, i) => {
+    const ve = vecEnd[i];
+
+    return interpolate(vs, ve, proportion);
+  }) as T;
+}
+
 export function triangleArea(A: Vector2, B: Vector2, C: Vector2): number {
   return (
     Math.abs(

@@ -5,7 +5,7 @@ import {
   Vector3,
 } from "./types";
 import {
-  interpolate,
+  interpolateVector,
   vecAdd,
   vecDot,
   vecMult,
@@ -39,61 +39,58 @@ export function clipTris(tris: Tri[]): Tri[] | null {
     if (negativeIndices.length === 0) {
       newTris.push(tri);
     } else if (negativeIndices.length === 1) {
-      const [posVertIndexA, posVertIndexB] = positiveIndices;
-      const [negVertIndexC] = negativeIndices;
+      const [posVertIndex1, posVertIndex2] = positiveIndices;
+      const [negVertIndex] = negativeIndices;
 
-      const A = tri.verts[posVertIndexA];
-      const B = tri.verts[posVertIndexB];
-      const C = tri.verts[negVertIndexC];
+      const posVert1 = tri.verts[posVertIndex1];
+      const posVert2 = tri.verts[posVertIndex2];
+      const negVert = tri.verts[negVertIndex];
 
-      const t1 = (
-        (-near.distance - vecDot(near.normal, A)) /
-        (vecDot(near.normal, vecSub(C, A)))
+      const pos1Color = tri.colors[posVertIndex1];
+      const pos2Color = tri.colors[posVertIndex2];
+      const negColor = tri.colors[negVertIndex];
+
+      const {
+        point: newNegVert1,
+        proportion: pos1AndNegProportion,
+      } = planeLineSegmentIntersection(near, [posVert1, negVert]);
+
+      const {
+        point: newNegVert2,
+        proportion: pos2AndNegProportion,
+      } = planeLineSegmentIntersection(near, [posVert2, negVert]);
+
+      const newNegColor1 = interpolateVector(
+        pos1Color,
+        negColor,
+        pos1AndNegProportion
       );
 
-      const t2 = (
-        (-near.distance - vecDot(near.normal, B)) /
-        (vecDot(near.normal, vecSub(C, B)))
+      const newNegColor2 = interpolateVector(
+        pos2Color,
+        negColor,
+        pos2AndNegProportion
       );
-
-      const newA = vecAdd(A, vecMult(vecSub(C, A), t1));
-      const newB = vecAdd(B, vecMult(vecSub(C, B), t2));
-
-      const colorA = tri.colors[posVertIndexA];
-      const colorB = tri.colors[posVertIndexB];
-      const colorC = tri.colors[negVertIndexC];
-
-      const newColorA: Vector3 = [
-        interpolate(colorA[0], colorC[0], t1),
-        interpolate(colorA[1], colorC[1], t1),
-        interpolate(colorA[2], colorC[2], t1),
-      ];
-
-      const newColorB: Vector3 = [
-        interpolate(colorB[0], colorC[0], t2),
-        interpolate(colorB[1], colorC[1], t2),
-        interpolate(colorB[2], colorC[2], t2),
-      ];
 
       let newVerts1 = [] as unknown as Matrix3x3;
-      newVerts1[posVertIndexA] = A;
-      newVerts1[posVertIndexB] = B;
-      newVerts1[negVertIndexC] = newA;
+      newVerts1[posVertIndex1] = posVert1;
+      newVerts1[posVertIndex2] = posVert2;
+      newVerts1[negVertIndex] = newNegVert1;
 
       let newColors1 = [] as unknown as Matrix3x3;
-      newColors1[posVertIndexA] = colorA;
-      newColors1[posVertIndexB] = colorB;
-      newColors1[negVertIndexC] = newColorA;
+      newColors1[posVertIndex1] = pos1Color;
+      newColors1[posVertIndex2] = pos2Color;
+      newColors1[negVertIndex] = newNegColor1;
 
       let newVerts2 = [] as unknown as Matrix3x3;
-      newVerts2[posVertIndexA] = newA;
-      newVerts2[posVertIndexB] = B;
-      newVerts2[negVertIndexC] = newB;
+      newVerts2[posVertIndex1] = newNegVert1;
+      newVerts2[posVertIndex2] = posVert2;
+      newVerts2[negVertIndex] = newNegVert2;
 
       let newColors2 = [] as unknown as Matrix3x3;
-      newColors2[posVertIndexA] = newColorA;
-      newColors2[posVertIndexB] = colorB;
-      newColors2[negVertIndexC] = newColorB;
+      newColors2[posVertIndex1] = newNegColor1;
+      newColors2[posVertIndex2] = pos2Color;
+      newColors2[negVertIndex] = newNegColor2;
 
       newTris.push({
         verts: newVerts1,
@@ -106,51 +103,48 @@ export function clipTris(tris: Tri[]): Tri[] | null {
 
       return;
     } else if (negativeIndices.length === 2) {
-      const [posVertIndexA] = positiveIndices;
-      const [negVertIndexB, negVertIndexC] = negativeIndices;
+      const [posVertIndex] = positiveIndices;
+      const [negVertIndex1, negVertIndex2] = negativeIndices;
 
-      const A = tri.verts[posVertIndexA];
-      const B = tri.verts[negVertIndexB]
-      const C = tri.verts[negVertIndexC]
+      const posVert = tri.verts[posVertIndex];
+      const negVert1 = tri.verts[negVertIndex1];
+      const negVert2 = tri.verts[negVertIndex2];
 
-      const t1 = (
-        (-near.distance - vecDot(near.normal, A)) /
-        (vecDot(near.normal, vecSub(B, A)))
+      const posColor = tri.colors[posVertIndex];
+      const negColor1 = tri.colors[negVertIndex1];
+      const negColor2 = tri.colors[negVertIndex2];
+
+      const {
+        point: newNegVert1,
+        proportion: posAndNeg1Proportion,
+      } = planeLineSegmentIntersection(near, [posVert, negVert1]);
+
+      const {
+        point: newNegVert2,
+        proportion: posAndNeg2Proportion,
+      } = planeLineSegmentIntersection(near, [posVert, negVert2]);
+
+      const newNegColor1 = interpolateVector(
+        posColor,
+        negColor1,
+        posAndNeg1Proportion
       );
 
-      const t2 = (
-        (-near.distance - vecDot(near.normal, A)) /
-        (vecDot(near.normal, vecSub(C, A)))
+      const newNegColor2 = interpolateVector(
+        posColor,
+        negColor2,
+        posAndNeg2Proportion
       );
-
-      const newB = vecAdd(A, vecMult(vecSub(B, A), t1));
-      const newC = vecAdd(A, vecMult(vecSub(C, A), t2));
-
-      const colorA = tri.colors[posVertIndexA];
-      const colorB = tri.colors[negVertIndexB];
-      const colorC = tri.colors[negVertIndexC];
-
-      const newColorB: Vector3 = [
-        interpolate(colorA[0], colorB[0], t1),
-        interpolate(colorA[1], colorB[1], t1),
-        interpolate(colorA[2], colorB[2], t1),
-      ];
-
-      const newColorC: Vector3 = [
-        interpolate(colorA[0], colorC[0], t2),
-        interpolate(colorA[1], colorC[1], t2),
-        interpolate(colorA[2], colorC[2], t2),
-      ];
 
       let newVerts = [] as unknown as Matrix3x3;
-      newVerts[posVertIndexA] = A;
-      newVerts[negVertIndexB] = newB;
-      newVerts[negVertIndexC] = newC;
+      newVerts[posVertIndex] = posVert;
+      newVerts[negVertIndex1] = newNegVert1;
+      newVerts[negVertIndex2] = newNegVert2;
 
       let newColors = [] as unknown as Matrix3x3;
-      newColors[posVertIndexA] = colorA;
-      newColors[negVertIndexB] = newColorB;
-      newColors[negVertIndexC] = newColorC;
+      newColors[posVertIndex] = posColor;
+      newColors[negVertIndex1] = newNegColor1;
+      newColors[negVertIndex2] = newNegColor2;
 
       newTris.push({
         verts: newVerts,
@@ -164,4 +158,21 @@ export function clipTris(tris: Tri[]): Tri[] | null {
   });
 
   return newTris;
+}
+
+function planeLineSegmentIntersection(
+  plane: Plane,
+  lineSegment: [Vector3, Vector3],
+): { point: Vector3, proportion: number } {
+  const proportion = (
+    (-plane.distance - vecDot(plane.normal, lineSegment[0])) /
+    (vecDot(plane.normal, vecSub(lineSegment[1], lineSegment[0])))
+  );
+
+  const point = vecAdd(lineSegment[0], vecMult(vecSub(lineSegment[1], lineSegment[0]), proportion));
+
+  return {
+    point,
+    proportion,
+  }
 }

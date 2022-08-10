@@ -29,7 +29,7 @@ import {
 import { parseObjFile } from "./obj";
 import loadFile from "./loadFile";
 
-const DRAW_WIREFRAME = false;
+const DRAW_WIREFRAME = true;
 const DRAW_Z_BUFFER = false;
 const DRAW_MESH = true;
 
@@ -51,23 +51,7 @@ const blankZBuffer = new Float64Array(canvas.width * canvas.height);
 const zBuffer = Float64Array.from(blankZBuffer);
 
 async function start() {
-  //scene[0].model = parseObjFile(await loadFile("./models/cube.obj"));
-  scene[0].model = {
-    tris: [
-      {
-        verts: [
-          [1, 0, 0],
-          [-1, 0, 0],
-          [0, 0.5, 2],
-        ],
-        colors: [
-          [255, 0, 0],
-          [0, 255, 0],
-          [0, 0, 255],
-        ]
-      }
-    ]
-  };
+  scene[0].model = parseObjFile(await loadFile("./models/cube.obj"));
 
   update();
 }
@@ -88,7 +72,7 @@ function update() {
   requestAnimationFrame(update);
 }
 
-const moveSens = 0.5;
+const moveSens = 0.2;
 const rotateSens = 5;
 
 const scene: Scene = [
@@ -103,7 +87,7 @@ const scene: Scene = [
 ];
 
 let cam: Transform = {
-  translation: [0, 2.1, -11.5],
+  translation: [0, 1.9, -12.5],
   rotation: [10, 0, 0],
   scale: [1, 1, 1],
 }
