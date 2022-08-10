@@ -5,8 +5,8 @@ import {
 } from "./types";
 import {
   clamp,
-  getInterpolatedVertNumber,
-  getInterpolatedVertVector,
+  getProportionallyInterpolatedNumber,
+  getProportionallyInterpolatedVector,
   interpolate,
   isPointInTriangle,
 } from "./math";
@@ -100,13 +100,13 @@ export function drawFilledTriangle(
       const [isIn, proportions] = isPointInTriangle([x, y], p1, p2, p3);
 
       if (isIn) {
-        const color = getInterpolatedVertVector(
+        const color = getProportionallyInterpolatedVector(
           vertAtrr1.color,
           vertAtrr2.color,
           vertAtrr3.color,
           proportions,
         );
-        const z = getInterpolatedVertNumber(
+        const z = getProportionallyInterpolatedNumber(
           vertAtrr1.z,
           vertAtrr2.z,
           vertAtrr3.z,

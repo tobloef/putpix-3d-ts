@@ -59,7 +59,7 @@ export function parseObjFile(objFileContents: string): Model {
     ];
     return ({
       verts: t,
-      color: [randomColor, randomColor, randomColor]
+      colors: [randomColor, randomColor, randomColor]
     });
   })
 

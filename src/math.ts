@@ -6,7 +6,11 @@ import {
   Vector3,
 } from "./types";
 
-export function interpolate(start: number, end: number, proportion: number): number {
+export function interpolate(
+  start: number,
+  end: number,
+  proportion: number,
+): number {
   return start * (1 - proportion) + end * proportion;
 }
 
@@ -162,20 +166,20 @@ export function isPointInTriangle(
   return [isIn, [aPrime, bPrime, cPrime]];
 }
 
-export function getInterpolatedVertVector(
+export function getProportionallyInterpolatedVector(
   vecA: Vector3,
   vecB: Vector3,
   vecC: Vector3,
   proportions: Vector3,
 ): Vector3 {
   return [
-    getInterpolatedVertNumber(vecA[0], vecB[0], vecC[0], proportions),
-    getInterpolatedVertNumber(vecA[1], vecB[1], vecC[1], proportions),
-    getInterpolatedVertNumber(vecA[2], vecB[2], vecC[2], proportions),
+    getProportionallyInterpolatedNumber(vecA[0], vecB[0], vecC[0], proportions),
+    getProportionallyInterpolatedNumber(vecA[1], vecB[1], vecC[1], proportions),
+    getProportionallyInterpolatedNumber(vecA[2], vecB[2], vecC[2], proportions),
   ];
 }
 
-export function getInterpolatedVertNumber(
+export function getProportionallyInterpolatedNumber(
   a: number,
   b: number,
   c: number,

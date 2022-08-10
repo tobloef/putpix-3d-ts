@@ -51,7 +51,23 @@ const blankZBuffer = new Float64Array(canvas.width * canvas.height);
 const zBuffer = Float64Array.from(blankZBuffer);
 
 async function start() {
-  scene[0].model = parseObjFile(await loadFile("./models/rat.obj"));
+  //scene[0].model = parseObjFile(await loadFile("./models/cube.obj"));
+  scene[0].model = {
+    tris: [
+      {
+        verts: [
+          [1, 0, 0],
+          [-1, 0, 0],
+          [0, 0.5, 2],
+        ],
+        colors: [
+          [255, 0, 0],
+          [0, 255, 0],
+          [0, 0, 255],
+        ]
+      }
+    ]
+  };
 
   update();
 }
@@ -78,7 +94,7 @@ const rotateSens = 5;
 const scene: Scene = [
   {
     transform: {
-      translation: [0, 0, 0],
+      translation: [0, 1.7, -13],
       scale: [1, 1, 1],
       rotation: [0, 0, 0],
     },
@@ -87,13 +103,13 @@ const scene: Scene = [
 ];
 
 let cam: Transform = {
-  translation: [-12, 2, 0],
-  rotation: [10, 90, 0],
+  translation: [0, 2.1, -11.5],
+  rotation: [10, 0, 0],
   scale: [1, 1, 1],
 }
 
 function render(dt: number) {
-  scene[0].transform.rotation = vecAdd(scene[0].transform.rotation, vecMult([0, dt, 0], 100));
+  //scene[0].transform.rotation = vecAdd(scene[0].transform.rotation, vecMult([0, dt, 0], 100));
 
   scene.forEach((obj) => {
     if (obj.model === null) {
@@ -118,7 +134,7 @@ function render(dt: number) {
     }
 
     const projectedTris = clippedTris.map((tri) => ({
-      color: tri.color,
+      color: tri.colors,
       unprojectedVerts: tri.verts,
       projectedVerts: tri.verts.map((v) => project(imageData, v)),
     }));
