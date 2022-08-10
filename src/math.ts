@@ -219,3 +219,11 @@ export function clamp(
 ): number {
   return Math.max(Math.min(x, max), min);
 }
+
+export function calculateVertsCenter(verts: [Vector3, Vector3, Vector3]): Vector3 {
+  return [
+    (verts[0][0] + verts[1][0] + verts[2][0]) / 3,
+    (verts[0][1] + verts[1][1] + verts[2][1]) / 3,
+    (verts[0][2] + verts[1][2] + verts[2][2]) / 3,
+  ]
+}

@@ -8,6 +8,7 @@ import type {
 } from "./types";
 import { white } from "./colors";
 import {
+  calculateVertsCenter,
   interpolate,
   vecAdd,
   vecMult,
@@ -32,6 +33,7 @@ import loadFile from "./loadFile";
 const DRAW_WIREFRAME = true;
 const DRAW_Z_BUFFER = false;
 const DRAW_MESH = true;
+const VERTEX_LIGHTING = false;
 
 const canvas = document.querySelector("canvas")!;
 const ctx = canvas.getContext("2d")!;
@@ -117,7 +119,30 @@ function render(dt: number) {
       return;
     }
 
-    const projectedTris = clippedTris.map((tri) => ({
+    const illuminatedTris: Tri[] = clippedTris.map((t) => {
+      if (!VERTEX_LIGHTING) {
+        const center = calculateVertsCenter(t.verts);
+        const normal = calculateNormal(t.verts);
+
+        const illumination = calculateIllumination(center, normal, cam, lights);
+
+        return {
+          ...t,
+          illuminations: [illumination, illumination, illumination],
+        }
+      } else {
+        const normals = t.verts.map((v) => calculateNormal(v));
+        const illuminations = t.verts.map((v, i) => calculateIllumination(
+          v, normals[i], cam, lights
+        ));
+        return {
+          ...t,
+          illuminations,
+        }
+      }
+    });
+
+    const projectedTris = illuminatedTris.map((tri) => ({
       color: tri.colors,
       unprojectedVerts: tri.verts,
       projectedVerts: tri.verts.map((v) => project(imageData, v)),
