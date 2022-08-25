@@ -1,3 +1,5 @@
+import { Light } from "./lighting";
+
 export type Plane = {
   normal: Vector3;
   distance: number;
@@ -35,4 +37,7 @@ export type Obj = {
   transform: Transform,
 };
 
-export type Scene = Obj[];
+export type Scene = {
+  objects: Obj[],
+  lights: Light[],
+};

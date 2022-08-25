@@ -64,19 +64,44 @@ export function setupEvents(cam: Transform, scene: Scene, moveSens: number, rota
 
     if (e.key === "i") {
       e.preventDefault();
-      scene[0].transform.rotation[0] += rotateSens;
+      scene.objects[0].transform.rotation[0] += rotateSens;
     }
     if (e.key === "j") {
       e.preventDefault();
-      scene[0].transform.rotation[1] += rotateSens;
+      scene.objects[0].transform.rotation[1] += rotateSens;
     }
     if (e.key === "k") {
       e.preventDefault();
-      scene[0].transform.rotation[0] -= rotateSens;
+      scene.objects[0].transform.rotation[0] -= rotateSens;
     }
     if (e.key === "l") {
       e.preventDefault();
-      scene[0].transform.rotation[1] -= rotateSens;
+      scene.objects[0].transform.rotation[1] -= rotateSens;
+    }
+
+    if (e.key === "c") {
+      e.preventDefault();
+      scene.lights[0].color[0] -= 10;
+    }
+    if (e.key === "v") {
+      e.preventDefault();
+      scene.lights[0].color[1] -= 10;
+    }
+    if (e.key === "b") {
+      e.preventDefault();
+      scene.lights[0].color[2] -= 10;
+    }
+    if (e.key === "f") {
+      e.preventDefault();
+      scene.lights[0].color[0] += 10;
+    }
+    if (e.key === "g") {
+      e.preventDefault();
+      scene.lights[0].color[1] += 10;
+    }
+    if (e.key === "h") {
+      e.preventDefault();
+      scene.lights[0].color[2] += 10;
     }
   })
 }

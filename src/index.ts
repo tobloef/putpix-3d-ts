@@ -1,19 +1,23 @@
 import "./index.css";
 import type {
+  Matrix3x3,
   Scene,
   Transform,
   Tri,
   Vector3,
 
 } from "./types";
-import { white } from "./colors";
 import {
+  blue,
+  white,
+} from "./colors";
+import {
+  calculateTriNormal,
   calculateVertsCenter,
   interpolate,
-  vecAdd,
+  vecClamp,
   vecMult,
-
-
+  vecMultVec,
 } from "./math";
 import { setupEvents } from "./events";
 import {
@@ -29,8 +33,16 @@ import {
 } from "./transform";
 import { parseObjFile } from "./obj";
 import loadFile from "./loadFile";
+import {
+  calculateIllumination,
+} from "./lighting";
 
-const DRAW_WIREFRAME = true;
+/*
+  TODO: Represent colors as numbers from 0.0 - 1.0
+  TODO: Pure Cyan/Magenta/Yellow will not grow brighter with light
+ */
+
+const DRAW_WIREFRAME = false;
 const DRAW_Z_BUFFER = false;
 const DRAW_MESH = true;
 const VERTEX_LIGHTING = false;
@@ -53,7 +65,7 @@ const blankZBuffer = new Float64Array(canvas.width * canvas.height);
 const zBuffer = Float64Array.from(blankZBuffer);
 
 async function start() {
-  scene[0].model = parseObjFile(await loadFile("./models/cube.obj"));
+  scene.objects[0].model = parseObjFile(await loadFile("./models/cube.obj"));
 
   update();
 }
@@ -77,16 +89,26 @@ function update() {
 const moveSens = 0.2;
 const rotateSens = 5;
 
-const scene: Scene = [
-  {
-    transform: {
-      translation: [0, 1.7, -13],
-      scale: [1, 1, 1],
-      rotation: [0, 0, 0],
+const scene: Scene = {
+  lights: [
+    {
+      type: "ambient",
+      intensity: 1,
+      color: white,
+    }
+  ],
+  objects: [
+    {
+      transform: {
+        translation: [0, 1.7, -13],
+        scale: [1, 1, 1],
+        rotation: [0, 0, 0],
+      },
+      model: null,
     },
-    model: null,
-  },
-];
+  ],
+};
+
 
 let cam: Transform = {
   translation: [0, 1.9, -12.5],
@@ -97,7 +119,7 @@ let cam: Transform = {
 function render(dt: number) {
   //scene[0].transform.rotation = vecAdd(scene[0].transform.rotation, vecMult([0, dt, 0], 100));
 
-  scene.forEach((obj) => {
+  scene.objects.forEach((obj) => {
     if (obj.model === null) {
       return;
     }
@@ -120,24 +142,26 @@ function render(dt: number) {
     }
 
     const illuminatedTris: Tri[] = clippedTris.map((t) => {
-      if (!VERTEX_LIGHTING) {
-        const center = calculateVertsCenter(t.verts);
-        const normal = calculateNormal(t.verts);
+      if (VERTEX_LIGHTING) {
+        const normal = calculateTriNormal(t.verts);
 
-        const illumination = calculateIllumination(center, normal, cam, lights);
+        const illuminations = t.verts.map((v) => calculateIllumination(
+          v, normal, cam, scene.lights,
+        ));
 
         return {
           ...t,
-          illuminations: [illumination, illumination, illumination],
+          colors: t.colors.map((c, i) => vecClamp(vecMultVec(c, illuminations[i]), 0, 255)) as Matrix3x3,
         }
       } else {
-        const normals = t.verts.map((v) => calculateNormal(v));
-        const illuminations = t.verts.map((v, i) => calculateIllumination(
-          v, normals[i], cam, lights
-        ));
+        const center = calculateVertsCenter(t.verts);
+        const normal = calculateTriNormal(t.verts);
+
+        const illumination = calculateIllumination(center, normal, cam, scene.lights);
+
         return {
           ...t,
-          illuminations,
+          colors: t.colors.map((c) => vecClamp(vecMultVec(c, illumination), 0, 255)) as Matrix3x3,
         }
       }
     });

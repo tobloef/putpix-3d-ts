@@ -220,10 +220,24 @@ export function clamp(
   return Math.max(Math.min(x, max), min);
 }
 
+export function vecClamp<T extends Vector>(
+  v: T,
+  min: number,
+  max: number,
+): T {
+  return v.map((n) => clamp(n, min, max)) as T;
+}
+
 export function calculateVertsCenter(verts: [Vector3, Vector3, Vector3]): Vector3 {
   return [
     (verts[0][0] + verts[1][0] + verts[2][0]) / 3,
     (verts[0][1] + verts[1][1] + verts[2][1]) / 3,
     (verts[0][2] + verts[1][2] + verts[2][2]) / 3,
   ]
+}
+
+export function calculateTriNormal(verts: Matrix3x3): Vector3 {
+  const a = vecAdd(verts[1], vecMult(verts[0], -1));
+  const b = vecAdd(verts[2], vecMult(verts[0], -1));
+  return vecCross(a, b);
 }
