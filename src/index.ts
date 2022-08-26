@@ -8,13 +8,13 @@ import type {
 
 } from "./types";
 import {
-  blue,
   white,
 } from "./colors";
 import {
   calculateTriNormal,
   calculateVertsCenter,
   interpolate,
+  vecAdd,
   vecClamp,
   vecMult,
   vecMultVec,
@@ -45,7 +45,7 @@ import {
 const DRAW_WIREFRAME = false;
 const DRAW_Z_BUFFER = false;
 const DRAW_MESH = true;
-const VERTEX_LIGHTING = false;
+const VERTEX_LIGHTING = true;
 
 const canvas = document.querySelector("canvas")!;
 const ctx = canvas.getContext("2d")!;
@@ -100,7 +100,7 @@ const scene: Scene = {
   objects: [
     {
       transform: {
-        translation: [0, 1.7, -13],
+        translation: [0, 0, 0],
         scale: [1, 1, 1],
         rotation: [0, 0, 0],
       },
@@ -111,13 +111,16 @@ const scene: Scene = {
 
 
 let cam: Transform = {
-  translation: [0, 1.9, -12.5],
-  rotation: [10, 0, 0],
+  translation: [0, 4, -10],
+  rotation: [20, 0, 0],
   scale: [1, 1, 1],
 }
 
 function render(dt: number) {
-  //scene[0].transform.rotation = vecAdd(scene[0].transform.rotation, vecMult([0, dt, 0], 100));
+  scene.objects[0].transform.rotation = vecAdd(
+    scene.objects[0].transform.rotation,
+    vecMult([0, dt, 0], 100)
+  );
 
   scene.objects.forEach((obj) => {
     if (obj.model === null) {
