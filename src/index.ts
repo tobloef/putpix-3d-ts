@@ -162,7 +162,7 @@ let cam: Transform = {
   scale: [1, 1, 1],
 }
 
-function render(dt: number) {
+function render(_dt: number) {
   let objs = [...scene.objects];
 
   scene.lights.forEach((light) => {
