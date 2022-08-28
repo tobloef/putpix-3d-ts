@@ -64,6 +64,11 @@ export function vecMag<T extends Vector>(a: T): number {
 
 export function vecNorm<T extends Vector>(a: T): T {
   const mag = vecMag(a);
+
+  if (mag === 0) {
+    throw new Error("Cannot normalize vector with magnitude of 0.");
+  }
+
   return a.map((x) => x / mag) as T;
 }
 
@@ -239,5 +244,5 @@ export function calculateVertsCenter(verts: [Vector3, Vector3, Vector3]): Vector
 export function calculateTriNormal(verts: Matrix3x3): Vector3 {
   const a = vecAdd(verts[1], vecMult(verts[0], -1));
   const b = vecAdd(verts[2], vecMult(verts[0], -1));
-  return vecCross(a, b);
+  return vecNorm(vecCross(a, b));
 }

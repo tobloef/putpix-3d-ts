@@ -53,9 +53,9 @@ export function parseObjFile(objFileContents: string): Model {
 
   const coloredTris: Tri[] = tris.map((t) => {
     const randomColor: Vector3 = [
-      randomInt(0, 255),
-      randomInt(0, 255),
-      randomInt(0, 255)
+      randomInt(255, 255),
+      randomInt(255, 255),
+      randomInt(255, 255)
     ];
     return ({
       verts: t,

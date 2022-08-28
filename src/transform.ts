@@ -23,9 +23,18 @@ export function transform(v: Vector3, transform: Transform): Vector3 {
 }
 
 export function transformByCamera(cam: Transform, v: Vector3): Vector3 {
-  const camTranslated = vecSub(v, cam.translation);
+  const camTranslated = translateByCamera(cam, v);
+  const camTranslatedAndRotated = rotateByCamera(cam, camTranslated);
+  return camTranslatedAndRotated;
+}
+
+export function translateByCamera(cam: Transform, v: Vector3): Vector3 {
+  return vecSub(v, cam.translation);
+}
+
+export function rotateByCamera(cam: Transform, v: Vector3): Vector3 {
   const m = rotationVectorToMatrix(cam.rotation);
   const mTransposed = matTranspose(m);
-  const camRotated = matMultVec(mTransposed, camTranslated).map((x) => x[0]) as Vector3;
+  const camRotated = matMultVec(mTransposed, v).map((x) => x[0]) as Vector3;
   return camRotated;
 }

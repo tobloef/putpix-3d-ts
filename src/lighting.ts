@@ -1,12 +1,13 @@
 import {
   Transform,
-  Vector,
   Vector3,
 } from "./types";
 import {
+  vecAdd,
   vecDiv,
+  vecDot,
   vecMult,
-  vecMultVec,
+
 } from "./math";
 
 export type AmbientLight = {
@@ -26,7 +27,7 @@ export type PointLight = {
   type: "point",
   intensity: number,
   color: Vector3,
-  position: number,
+  position: Vector3,
 };
 
 export type Light = (
@@ -41,12 +42,33 @@ export function calculateIllumination(
   camera: Transform,
   lights: Light[]
 ): Vector3 {
-  let illumination: Vector3 = [0, 0, 0];
+  let illuminationColors: Vector3 = [0, 0, 0];
 
   for (const light of lights) {
-    illumination = vecDiv(vecMult(light.color, light.intensity), 255)
+    let illuminationFromLight: Vector3 = [0, 0, 0];
+
+    switch (light.type) {
+      case "ambient":
+        illuminationFromLight = vecMult(light.color, light.intensity);
+
+        break;
+      case "directional":
+        const percentageAtAngle = Math.max(0, -vecDot(light.direction, normal));
+        const intensityAtAngle = light.intensity * percentageAtAngle;
+        illuminationFromLight = vecMult(light.color, intensityAtAngle);
+
+        break;
+      case "point":
+        // TODO
+
+        break;
+    }
+
+    illuminationColors = vecAdd(illuminationColors, illuminationFromLight);
   }
 
-  return illumination;
+  const illuminationFactors = vecDiv(illuminationColors, 255);
+
+  return illuminationFactors;
 }
 

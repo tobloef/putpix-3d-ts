@@ -16,8 +16,11 @@ import {
   interpolate,
   vecAdd,
   vecClamp,
+  vecDiv,
   vecMult,
   vecMultVec,
+  vecNorm,
+
 } from "./math";
 import { setupEvents } from "./events";
 import {
@@ -28,14 +31,18 @@ import {
 import { project } from "./projection";
 import { clipTris } from "./clip";
 import {
+  rotateByCamera,
   transform,
   transformByCamera,
+  translateByCamera,
 } from "./transform";
 import { parseObjFile } from "./obj";
 import loadFile from "./loadFile";
 import {
   calculateIllumination,
+  Light,
 } from "./lighting";
+import assertUnreachable from "./assertUnreachable";
 
 /*
   TODO: Represent colors as numbers from 0.0 - 1.0
@@ -93,7 +100,13 @@ const scene: Scene = {
   lights: [
     {
       type: "ambient",
+      intensity: 0.2,
+      color: white,
+    },
+    {
+      type: "directional",
       intensity: 1,
+      direction: vecNorm(vecDiv([0, 4, -10], -1)),
       color: white,
     }
   ],
@@ -122,6 +135,27 @@ function render(dt: number) {
     vecMult([0, dt, 0], 100)
   );
 
+  const transformedLights = scene.lights.map((light): Light => {
+    switch (light.type) {
+      case "ambient":
+        return light;
+      case "directional":
+        const transformedDirection = rotateByCamera(cam, light.direction);
+
+        return {
+          ...light,
+          direction: transformedDirection,
+        };
+      case "point":
+        const transformedPosition = translateByCamera(cam, light.position);
+
+        return {
+          ...light,
+          position: transformedPosition,
+        }
+    }
+  });
+
   scene.objects.forEach((obj) => {
     if (obj.model === null) {
       return;
@@ -149,7 +183,7 @@ function render(dt: number) {
         const normal = calculateTriNormal(t.verts);
 
         const illuminations = t.verts.map((v) => calculateIllumination(
-          v, normal, cam, scene.lights,
+          v, normal, cam, transformedLights,
         ));
 
         return {
@@ -160,7 +194,7 @@ function render(dt: number) {
         const center = calculateVertsCenter(t.verts);
         const normal = calculateTriNormal(t.verts);
 
-        const illumination = calculateIllumination(center, normal, cam, scene.lights);
+        const illumination = calculateIllumination(center, normal, cam, transformedLights);
 
         return {
           ...t,
