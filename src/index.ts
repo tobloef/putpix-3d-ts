@@ -1,6 +1,7 @@
 import "./index.css";
 import type {
   Matrix3x3,
+  Model,
   Scene,
   Transform,
   Tri,
@@ -8,19 +9,18 @@ import type {
 
 } from "./types";
 import {
+  blue,
+  green,
+  red,
   white,
 } from "./colors";
 import {
   calculateTriNormal,
   calculateVertsCenter,
   interpolate,
-  vecAdd,
   vecClamp,
-  vecDiv,
-  vecMult,
   vecMultVec,
   vecNorm,
-
 } from "./math";
 import { setupEvents } from "./events";
 import {
@@ -42,11 +42,12 @@ import {
   calculateIllumination,
   Light,
 } from "./lighting";
-import assertUnreachable from "./assertUnreachable";
+import { Obj } from "./types";
 
 /*
   TODO: Represent colors as numbers from 0.0 - 1.0
   TODO: Pure Cyan/Magenta/Yellow will not grow brighter with light
+  TODO: Vectors as objects
  */
 
 const DRAW_WIREFRAME = false;
@@ -71,8 +72,18 @@ const imageData = new ImageData(canvas.width, canvas.height);
 const blankZBuffer = new Float64Array(canvas.width * canvas.height);
 const zBuffer = Float64Array.from(blankZBuffer);
 
+let cube: Model;
+
 async function start() {
-  scene.objects[0].model = parseObjFile(await loadFile("./models/cube.obj"));
+  for (const obj of scene.objects) {
+    if (obj.model != null || obj.modelPath == null) {
+      continue;
+    }
+
+    obj.model = parseObjFile(await loadFile(obj.modelPath));
+  }
+
+  cube = parseObjFile(await loadFile("./models/cube.obj"));
 
   update();
 }
@@ -96,30 +107,52 @@ function update() {
 const moveSens = 0.2;
 const rotateSens = 5;
 
+const lights: Light[] = [
+  {
+    type: "ambient",
+    intensity: 0.1,
+    color: white,
+  },
+  {
+    type: "directional",
+    intensity: 0,
+    direction: vecNorm([0, 0, 1]),
+    color: white,
+  },
+  {
+    type: "point",
+    intensity: 20,
+    position: [0, 1, 5],
+    color: red,
+  },
+  {
+    type: "point",
+    intensity: 20,
+    position: [-4.33, 1, -2.5],
+    color: green,
+  },
+  {
+    type: "point",
+    intensity: 20,
+    position: [4.33, 1, -2.5],
+    color: blue,
+  },
+];
+
+const objects: Obj[] = [
+  {
+    transform: {
+      translation: [0, 0, 0],
+      scale: [1, 1, 1],
+      rotation: [0, -120, 0],
+    },
+    modelPath: "./models/rat.obj",
+  },
+];
+
 const scene: Scene = {
-  lights: [
-    {
-      type: "ambient",
-      intensity: 0.2,
-      color: white,
-    },
-    {
-      type: "directional",
-      intensity: 1,
-      direction: vecNorm(vecDiv([0, 4, -10], -1)),
-      color: white,
-    }
-  ],
-  objects: [
-    {
-      transform: {
-        translation: [0, 0, 0],
-        scale: [1, 1, 1],
-        rotation: [0, 0, 0],
-      },
-      model: null,
-    },
-  ],
+  lights,
+  objects,
 };
 
 
@@ -130,10 +163,36 @@ let cam: Transform = {
 }
 
 function render(dt: number) {
-  scene.objects[0].transform.rotation = vecAdd(
-    scene.objects[0].transform.rotation,
-    vecMult([0, dt, 0], 100)
-  );
+  let objs = [...scene.objects];
+
+  scene.lights.forEach((light) => {
+    if (light.type !== "point") {
+      return;
+    }
+
+    light.position = rotateByCamera(
+      {
+      rotation: [0, 2, 0],
+      scale: [1, 1, 1],
+      translation: [0, 0, 0]
+      },
+      light.position,
+    );
+
+    objs.push({
+      model: {
+        tris: cube.tris.map((t) => ({
+          ...t,
+          colors: [light.color, light.color, light.color]
+        }))
+      },
+      transform: {
+        translation: light.position,
+        scale: [0.03, 0.03, 0.03],
+        rotation: [0, 0, 0],
+      }
+    })
+  })
 
   const transformedLights = scene.lights.map((light): Light => {
     switch (light.type) {
@@ -156,8 +215,8 @@ function render(dt: number) {
     }
   });
 
-  scene.objects.forEach((obj) => {
-    if (obj.model === null) {
+  objs.forEach((obj) => {
+    if (obj.model == null) {
       return;
     }
 
@@ -182,8 +241,12 @@ function render(dt: number) {
       if (VERTEX_LIGHTING) {
         const normal = calculateTriNormal(t.verts);
 
+        if (normal === null) {
+          return t;
+        }
+
         const illuminations = t.verts.map((v) => calculateIllumination(
-          v, normal, cam, transformedLights,
+          v, normal, transformedLights,
         ));
 
         return {
@@ -194,7 +257,11 @@ function render(dt: number) {
         const center = calculateVertsCenter(t.verts);
         const normal = calculateTriNormal(t.verts);
 
-        const illumination = calculateIllumination(center, normal, cam, transformedLights);
+        if (normal === null) {
+          return t;
+        }
+
+        const illumination = calculateIllumination(center, normal, transformedLights);
 
         return {
           ...t,

@@ -241,8 +241,26 @@ export function calculateVertsCenter(verts: [Vector3, Vector3, Vector3]): Vector
   ]
 }
 
-export function calculateTriNormal(verts: Matrix3x3): Vector3 {
+export function calculateTriNormal(verts: Matrix3x3): Vector3 | null {
   const a = vecAdd(verts[1], vecMult(verts[0], -1));
   const b = vecAdd(verts[2], vecMult(verts[0], -1));
-  return vecNorm(vecCross(a, b));
+  const cross = vecCross(a, b);
+
+  if (cross.every((n) => n === 0)) {
+    return null;
+  }
+
+  return vecNorm(cross);
+}
+
+export function distance(p1: Vector3, p2: Vector3): number {
+ return Math.sqrt(distanceSquared(p1, p2));
+}
+
+export function distanceSquared(p1: Vector3, p2: Vector3): number {
+  return (
+    Math.pow(p2[0]-p1[0], 2) +
+    Math.pow(p2[1]-p1[1], 2) +
+    Math.pow(p2[2]-p1[2], 2)
+  );
 }

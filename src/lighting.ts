@@ -1,13 +1,14 @@
 import {
-  Transform,
   Vector3,
 } from "./types";
 import {
+  distance,
   vecAdd,
   vecDiv,
   vecDot,
   vecMult,
-
+  vecNorm,
+  vecSub,
 } from "./math";
 
 export type AmbientLight = {
@@ -39,31 +40,32 @@ export type Light = (
 export function calculateIllumination(
   point: Vector3,
   normal: Vector3,
-  camera: Transform,
   lights: Light[]
 ): Vector3 {
   let illuminationColors: Vector3 = [0, 0, 0];
 
   for (const light of lights) {
-    let illuminationFromLight: Vector3 = [0, 0, 0];
+    let intensity: number = 0;
 
-    switch (light.type) {
-      case "ambient":
-        illuminationFromLight = vecMult(light.color, light.intensity);
+    if (light.type === "ambient") {
+      intensity = light.intensity;
 
-        break;
-      case "directional":
-        const percentageAtAngle = Math.max(0, -vecDot(light.direction, normal));
-        const intensityAtAngle = light.intensity * percentageAtAngle;
-        illuminationFromLight = vecMult(light.color, intensityAtAngle);
+    } else if (light.type === "directional") {
+      const factorAtAngle = Math.max(0, -vecDot(light.direction, normal));
+      intensity = light.intensity * factorAtAngle;
 
-        break;
-      case "point":
-        // TODO
-
-        break;
+    } else if (light.type === "point") {
+      const dist = distance(light.position, point);
+      const factorAtDistance = 1 / Math.pow(dist, 2);
+      const intensityAtDistance = light.intensity * factorAtDistance;
+      // Notice the easy optimization we could do here!
+      // Distance includes a square root, which we then negate here
+      const direction = vecNorm(vecSub(point, light.position));
+      const factorAtAngle = Math.max(0, -vecDot(direction, normal));
+      intensity = intensityAtDistance * factorAtAngle;
     }
 
+    const illuminationFromLight = vecMult(light.color, intensity);
     illuminationColors = vecAdd(illuminationColors, illuminationFromLight);
   }
 

@@ -33,9 +33,10 @@ export type Transform = {
 }
 
 export type Obj = {
-  model: Model | null,
   transform: Transform,
-};
+  model?: Model,
+  modelPath?: string,
+}
 
 export type Scene = {
   objects: Obj[],
