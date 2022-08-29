@@ -144,9 +144,9 @@ const objects: Obj[] = [
     transform: {
       translation: [0, 0, 0],
       scale: [1, 1, 1],
-      rotation: [0, -120, 0],
+      rotation: [0, 0, 0],
     },
-    modelPath: "./models/rat.obj",
+    modelPath: "./models/teapot.obj",
   },
 ];
 
@@ -293,9 +293,9 @@ function render(_dt: number) {
 
     if (DRAW_WIREFRAME) {
       projectedTris.forEach((t) => {
-        drawLine(imageData, t.projectedVerts[0], t.projectedVerts[1], white);
-        drawLine(imageData, t.projectedVerts[1], t.projectedVerts[2], white);
-        drawLine(imageData, t.projectedVerts[0], t.projectedVerts[2], white);
+        drawLine(imageData, t.projectedVerts[0], t.projectedVerts[1], t.color[0], t.color[1]);
+        drawLine(imageData, t.projectedVerts[1], t.projectedVerts[2], t.color[1], t.color[2]);
+        drawLine(imageData, t.projectedVerts[0], t.projectedVerts[2], t.color[0], t.color[2]);
       });
     }
   });

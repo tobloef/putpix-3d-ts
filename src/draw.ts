@@ -8,6 +8,7 @@ import {
   getProportionallyInterpolatedNumber,
   getProportionallyInterpolatedVector,
   interpolate,
+  interpolateVector,
   isPointInTriangle,
 } from "./math";
 
@@ -15,7 +16,8 @@ export function drawLine(
   imageData: ImageData,
   p1: Vector2,
   p2: Vector2,
-  color: Vector3,
+  color1: Vector3,
+  color2: Vector3 = color1,
 ) {
   let x1 = p1[0];
   let y1 = p1[1];
@@ -44,6 +46,8 @@ export function drawLine(
       currentWidth / totalWidth;
 
     const y = Math.round(interpolate(y1, y2, proportion));
+
+    const color = interpolateVector(color1, color2, proportion);
 
     if (isSteep) {
       setPixel(imageData, y, x, color);
