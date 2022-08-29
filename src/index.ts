@@ -146,9 +146,9 @@ const objects: Obj[] = [
     transform: {
       translation: [0, 0, 0],
       scale: [1, 1, 1],
-      rotation: [0, 0, 0],
+      rotation: [0, -120, 0],
     },
-    modelPath: "./models/teapot.obj",
+    modelPath: "./models/rat.obj",
   },
 ];
 
