@@ -5,6 +5,7 @@ import {
   Vector3,
 } from "./types";
 import {
+  calculateTriNormal,
   interpolateVector,
   vecAdd,
   vecDot,
@@ -19,16 +20,16 @@ const near: Plane = {
   normal: [0, 0, 1],
 }
 
-export function clipTris(tris: Tri[]): Tri[] | null {
+export function clipTris(tris: Tri[]): Tri[] {
   const newTris: Tri[] = [];
 
   tris.forEach((tri) => {
-    const dists = tri.verts.map((v) => vecDot(near.normal, v) + near.distance);
+    const distances = tri.verts.map((v) => vecDot(near.normal, v) + near.distance);
 
     let positiveIndices: number[] = [];
     let negativeIndices: number[] = [];
 
-    dists.forEach((d, i) => {
+    distances.forEach((d, i) => {
       if (d <= 0) {
         negativeIndices.push(i);
       } else {
@@ -92,14 +93,23 @@ export function clipTris(tris: Tri[]): Tri[] | null {
       newColors2[posVertIndex2] = pos2Color;
       newColors2[negVertIndex] = newNegColor2;
 
-      newTris.push({
-        verts: newVerts1,
-        colors: newColors1,
-      });
-      newTris.push({
-        verts: newVerts2,
-        colors: newColors2,
-      });
+      const normal1 = calculateTriNormal(newVerts1);
+      if (normal1 != null) {
+        newTris.push({
+          verts: newVerts1,
+          colors: newColors1,
+          normal: normal1,
+        });
+      }
+
+      const normal2 = calculateTriNormal(newVerts2);
+      if (normal2 != null) {
+        newTris.push({
+          verts: newVerts2,
+          colors: newColors2,
+          normal: normal2,
+        });
+      }
 
       return;
     } else if (negativeIndices.length === 2) {
@@ -146,10 +156,15 @@ export function clipTris(tris: Tri[]): Tri[] | null {
       newColors[negVertIndex1] = newNegColor1;
       newColors[negVertIndex2] = newNegColor2;
 
-      newTris.push({
-        verts: newVerts,
-        colors: newColors,
-      });
+      const normal = calculateTriNormal(newVerts)
+
+      if (normal != null) {
+        newTris.push({
+          verts: newVerts,
+          colors: newColors,
+          normal,
+        });
+      }
 
       return;
     } else if (negativeIndices.length === 3) {

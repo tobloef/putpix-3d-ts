@@ -29,7 +29,9 @@ import {
   setPixel,
 } from "./draw";
 import { project } from "./projection";
-import { clipTris } from "./clip";
+import {
+  clipTris,
+} from "./clip";
 import {
   rotateByCamera,
   transform,
@@ -222,31 +224,32 @@ function render(_dt: number) {
 
     const originalTris = obj.model.tris;
 
-    const transformedTris: Tri[] = originalTris.map((t): Tri => ({
-      ...t,
-      verts: t.verts.map((v): Vector3 => {
+    const transformedTris: Tri[] = originalTris.map((t): Tri | null => {
+      const newVerts = t.verts.map((v): Vector3 => {
         const transformed = transform(v, obj.transform);
         const camTransformed = transformByCamera(cam, transformed);
         return camTransformed;
-      }) as [Vector3, Vector3, Vector3],
-    }));
+      }) as [Vector3, Vector3, Vector3];
+
+      const normal = calculateTriNormal(newVerts);
+
+      if (normal === null) {
+        return null;
+      }
+
+      return ({
+        ...t,
+        verts: newVerts,
+        normal,
+      });
+    }).filter((t): t is Tri => t != null);
 
     const clippedTris = clipTris(transformedTris);
 
-    if (clippedTris === null) {
-      return;
-    }
-
     const illuminatedTris: Tri[] = clippedTris.map((t) => {
       if (VERTEX_LIGHTING) {
-        const normal = calculateTriNormal(t.verts);
-
-        if (normal === null) {
-          return t;
-        }
-
         const illuminations = t.verts.map((v) => calculateIllumination(
-          v, normal, transformedLights,
+          v, t.normal, transformedLights,
         ));
 
         return {
@@ -255,13 +258,12 @@ function render(_dt: number) {
         }
       } else {
         const center = calculateVertsCenter(t.verts);
-        const normal = calculateTriNormal(t.verts);
 
-        if (normal === null) {
+        if (t.normal === null) {
           return t;
         }
 
-        const illumination = calculateIllumination(center, normal, transformedLights);
+        const illumination = calculateIllumination(center, t.normal, transformedLights);
 
         return {
           ...t,

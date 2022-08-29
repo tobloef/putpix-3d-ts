@@ -19,7 +19,8 @@ export type VertAttribute = {
 
 export type Tri = {
   verts: Matrix3x3,
-  colors: Matrix3x3
+  colors: Matrix3x3,
+  normal: Vector3,
 };
 
 export type Model = {
