@@ -1,4 +1,5 @@
 import { Light } from "./lighting";
+import { Bitmap } from "./images";
 
 export type Plane = {
   normal: Vector3;
@@ -25,6 +26,7 @@ export type Tri = {
 
 export type Model = {
   tris: Tri[],
+  texture?: Bitmap,
 };
 
 export type Transform = {
@@ -35,8 +37,7 @@ export type Transform = {
 
 export type Obj = {
   transform: Transform,
-  model?: Model,
-  modelPath?: string,
+  model: Model,
 }
 
 export type Scene = {

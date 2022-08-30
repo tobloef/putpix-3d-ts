@@ -1,12 +1,12 @@
 import randomInt from "./randomInt";
 import type {
-  Model,
   Tri,
   Vector3,
 } from "./types";
 import { Matrix3x3 } from "./types";
+import { calculateTriNormal } from "./math";
 
-export function parseObjFile(objFileContents: string): Model {
+export function parseObjFileToTris(objFileContents: string): Tri[] {
   const lines = objFileContents.split(/\r?\n/);
 
   const verts = lines
@@ -15,7 +15,7 @@ export function parseObjFile(objFileContents: string): Model {
     .map((line) => line.split(" "))
     .map((parts) => parts.map(Number) as Vector3);
 
-  const tris = lines
+  const triVerts = lines
     .filter((line) => line.startsWith("f "))
     .map((line) => line.trim())
     .map((line) => line.split(" ").slice(1))
@@ -51,19 +51,25 @@ export function parseObjFile(objFileContents: string): Model {
     })
     .flat();
 
-  const coloredTris: Tri[] = tris.map((t) => {
+  const tris: Tri[] = triVerts.map((t) => {
     const randomColor: Vector3 = [
       randomInt(255, 255),
       randomInt(255, 255),
       randomInt(255, 255)
     ];
+
+    const normal = calculateTriNormal(t);
+
+    if (normal == null) {
+      return null;
+    }
+
     return ({
       verts: t,
-      colors: [randomColor, randomColor, randomColor]
+      colors: [randomColor, randomColor, randomColor],
+      normal,
     });
-  })
+  }).filter((t): t is Tri => t != null);
 
-  return {
-    tris: coloredTris,
-  };
+  return tris;
 }

@@ -6,8 +6,8 @@ import type {
   Transform,
   Tri,
   Vector3,
-
 } from "./types";
+import { Obj } from "./types";
 import {
   blue,
   green,
@@ -29,22 +29,25 @@ import {
   setPixel,
 } from "./draw";
 import { project } from "./projection";
-import {
-  clipTris,
-} from "./clip";
+import { clipTris } from "./clip";
 import {
   rotateByCamera,
   transform,
   transformByCamera,
   translateByCamera,
 } from "./transform";
-import { parseObjFile } from "./obj";
+import {
+  parseObjFileToTris,
+} from "./obj";
 import loadFile from "./loadFile";
 import {
   calculateIllumination,
   Light,
 } from "./lighting";
-import { Obj } from "./types";
+import {
+  imageDataToBitmap,
+  loadImage,
+} from "./images";
 
 /*
   TODO: Represent colors as numbers from 0.0 - 1.0
@@ -74,20 +77,80 @@ const imageData = new ImageData(canvas.width, canvas.height);
 const blankZBuffer = new Float64Array(canvas.width * canvas.height);
 const zBuffer = Float64Array.from(blankZBuffer);
 
+let scene: Scene | null;
 let cube: Model;
 
 async function start() {
-  for (const obj of scene.objects) {
-    if (obj.model != null || obj.modelPath == null) {
-      continue;
+  const lights: Light[] = [
+    {
+      type: "ambient",
+      intensity: 0.1,
+      color: white,
+    },
+    {
+      type: "directional",
+      intensity: 0,
+      direction: vecNorm([0, 0, 1]),
+      color: white,
+    },
+    {
+      type: "point",
+      intensity: 20,
+      position: [0, 1, 5],
+      color: red,
+    },
+    {
+      type: "point",
+      intensity: 20,
+      position: [-4.33, 1, -2.5],
+      color: green,
+    },
+    {
+      type: "point",
+      intensity: 20,
+      position: [4.33, 1, -2.5],
+      color: blue,
+    },
+  ];
+
+  const objects: Obj[] = [
+    {
+      transform: {
+        translation: [0, 0, 0],
+        scale: [1, 1, 1],
+        rotation: [0, -120, 0],
+      },
+      model: await loadModel("./models/rat.obj"),
+    },
+    {
+      transform: {
+        translation: [0, 0, 0],
+        scale: [1, 1, 1],
+        rotation: [0, -120, 0],
+      },
+      model: await loadModel("./models/cube.obj", "./textures/crate.jpeg"),
     }
+  ];
 
-    obj.model = parseObjFile(await loadFile(obj.modelPath));
-  }
+  scene = {
+    lights,
+    objects,
+  };
 
-  cube = parseObjFile(await loadFile("./models/cube.obj"));
+  setupEvents(cam, scene, moveSens, rotateSens);
+
+  cube = await loadModel("./models/cube.obj");
 
   update();
+}
+
+async function loadModel(objSrc: string, textureSrc?: string): Promise<Model> {
+  return {
+    tris: parseObjFileToTris(await loadFile(objSrc)),
+    texture: textureSrc != null
+      ? imageDataToBitmap(await loadImage(textureSrc))
+      : undefined,
+  }
 }
 
 function update() {
@@ -109,55 +172,6 @@ function update() {
 const moveSens = 0.2;
 const rotateSens = 5;
 
-const lights: Light[] = [
-  {
-    type: "ambient",
-    intensity: 0.1,
-    color: white,
-  },
-  {
-    type: "directional",
-    intensity: 0,
-    direction: vecNorm([0, 0, 1]),
-    color: white,
-  },
-  {
-    type: "point",
-    intensity: 20,
-    position: [0, 1, 5],
-    color: red,
-  },
-  {
-    type: "point",
-    intensity: 20,
-    position: [-4.33, 1, -2.5],
-    color: green,
-  },
-  {
-    type: "point",
-    intensity: 20,
-    position: [4.33, 1, -2.5],
-    color: blue,
-  },
-];
-
-const objects: Obj[] = [
-  {
-    transform: {
-      translation: [0, 0, 0],
-      scale: [1, 1, 1],
-      rotation: [0, -120, 0],
-    },
-    modelPath: "./models/rat.obj",
-  },
-];
-
-const scene: Scene = {
-  lights,
-  objects,
-};
-
-
 let cam: Transform = {
   translation: [0, 4, -10],
   rotation: [20, 0, 0],
@@ -165,6 +179,10 @@ let cam: Transform = {
 }
 
 function render(_dt: number) {
+  if (scene == null) {
+    return;
+  }
+
   let objs = [...scene.objects];
 
   scene.lights.forEach((light) => {
@@ -313,5 +331,4 @@ function render(_dt: number) {
   }
 }
 
-setupEvents(cam, scene, moveSens, rotateSens);
 start();
