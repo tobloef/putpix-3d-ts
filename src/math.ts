@@ -183,7 +183,7 @@ export function isPointInTriangle(
   return [isIn, [aPrime, bPrime, cPrime]];
 }
 
-export function getProportionallyInterpolatedVector(
+export function getProportionallyInterpolatedVector3(
   vecA: Vector3,
   vecB: Vector3,
   vecC: Vector3,
@@ -193,6 +193,18 @@ export function getProportionallyInterpolatedVector(
     getProportionallyInterpolatedNumber(vecA[0], vecB[0], vecC[0], proportions),
     getProportionallyInterpolatedNumber(vecA[1], vecB[1], vecC[1], proportions),
     getProportionallyInterpolatedNumber(vecA[2], vecB[2], vecC[2], proportions),
+  ];
+}
+
+export function getProportionallyInterpolatedVector2(
+  vecA: Vector2,
+  vecB: Vector2,
+  vecC: Vector2,
+  proportions: Vector3,
+): Vector2 {
+  return [
+    getProportionallyInterpolatedNumber(vecA[0], vecB[0], vecC[0], proportions),
+    getProportionallyInterpolatedNumber(vecA[1], vecB[1], vecC[1], proportions),
   ];
 }
 

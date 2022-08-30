@@ -6,11 +6,14 @@ import {
 import {
   clamp,
   getProportionallyInterpolatedNumber,
-  getProportionallyInterpolatedVector,
+  getProportionallyInterpolatedVector2,
+  getProportionallyInterpolatedVector3,
   interpolate,
   interpolateVector,
   isPointInTriangle,
+  vecClamp,
 } from "./math";
+import { Bitmap } from "./images";
 
 export function drawLine(
   imageData: ImageData,
@@ -94,6 +97,7 @@ export function drawFilledTriangle(
   vertAtrr1: VertAttribute,
   vertAtrr2: VertAttribute,
   vertAtrr3: VertAttribute,
+  texture?: Bitmap,
 ) {
   let [bbMin, bbMax] = getBoundingBox([p1, p2, p3]);
   bbMin = [clamp(bbMin[0], 0, imageData.width), clamp(bbMin[1], 0, imageData.height)];
@@ -103,29 +107,54 @@ export function drawFilledTriangle(
     for (let x = bbMin[0]; x <= bbMax[0]; x++) {
       const [isIn, proportions] = isPointInTriangle([x, y], p1, p2, p3);
 
-      if (isIn) {
-        const color = getProportionallyInterpolatedVector(
+      if (!isIn) {
+        continue;
+      }
+
+      let color: Vector3;
+
+      if (
+        texture != null &&
+        vertAtrr1.textureCoord != null &&
+        vertAtrr2.textureCoord != null &&
+        vertAtrr3.textureCoord != null
+      ) {
+        const textureCoordinates = getProportionallyInterpolatedVector2(
+          vertAtrr1.textureCoord,
+          vertAtrr2.textureCoord,
+          vertAtrr3.textureCoord,
+          proportions,
+        );
+        const xPixelIndex = Math.round(textureCoordinates[0] * (texture.width - 1));
+        const yPixelIndex = Math.round(textureCoordinates[1] * (texture.height - 1));
+
+        color = texture.pixels[xPixelIndex][yPixelIndex];
+      } else {
+        color = getProportionallyInterpolatedVector3(
           vertAtrr1.color,
           vertAtrr2.color,
           vertAtrr3.color,
           proportions,
         );
-        const z = getProportionallyInterpolatedNumber(
-          vertAtrr1.z,
-          vertAtrr2.z,
-          vertAtrr3.z,
-          proportions,
-        );
+      }
 
-        const zFrac = 1 / z;
-        const zBuffIndex = x + y * imageData.width;
 
-        if (zFrac > zBuffer[zBuffIndex]) {
-          setPixel(imageData, x, y, color);
 
-          if (x >= 0 && y >= 0 && x < imageData.width && y < imageData.height) {
-            zBuffer[zBuffIndex] = zFrac;
-          }
+      const z = getProportionallyInterpolatedNumber(
+        vertAtrr1.z,
+        vertAtrr2.z,
+        vertAtrr3.z,
+        proportions,
+      );
+
+      const zFrac = 1 / z;
+      const zBuffIndex = x + y * imageData.width;
+
+      if (zFrac > zBuffer[zBuffIndex]) {
+        setPixel(imageData, x, y, color);
+
+        if (x >= 0 && y >= 0 && x < imageData.width && y < imageData.height) {
+          zBuffer[zBuffIndex] = zFrac;
         }
       }
     }

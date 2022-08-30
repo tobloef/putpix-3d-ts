@@ -15,12 +15,15 @@ export type Matrix3x3 = [Vector3, Vector3, Vector3];
 
 export type VertAttribute = {
   color: Vector3,
+  textureCoord?: Vector2,
   z: number,
 }
 
 export type Tri = {
-  verts: Matrix3x3,
-  colors: Matrix3x3,
+  // TODO: Instead of 3-tuples of stuff, perhaps just one with each vertex attribute in it
+  verts: [Vector3, Vector3, Vector3],
+  colors: [Vector3, Vector3, Vector3],
+  textureCoords?: [Vector2, Vector2, Vector2],
   normal: Vector3,
 };
 

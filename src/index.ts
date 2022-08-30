@@ -78,7 +78,7 @@ const blankZBuffer = new Float64Array(canvas.width * canvas.height);
 const zBuffer = Float64Array.from(blankZBuffer);
 
 let scene: Scene | null;
-let cube: Model;
+let lightGizmo: Model;
 
 async function start() {
   const lights: Light[] = [
@@ -113,14 +113,57 @@ async function start() {
     },
   ];
 
+  const textureTestModel: Model = {
+    tris: [
+      {
+        verts: [
+          [-1, +1, 0],
+          [+1, +1, 0],
+          [-1, -1, 0],
+        ],
+        textureCoords: [
+          [0, 1],
+          [1, 1],
+          [0, 0],
+        ],
+        normal: calculateTriNormal([
+          [-1, +1, 0],
+          [+1, +1, 0],
+          [-1, -1, 0],
+        ])!,
+        colors: [white, white, white],
+      },
+      {
+        verts: [
+          [+1, +1, 0],
+          [+1, -1, 0],
+          [-1, -1, 0],
+        ],
+        textureCoords: [
+          [1, 1],
+          [1, 0],
+          [0, 0],
+        ],
+        normal: calculateTriNormal([
+          [+1, +1, 0],
+          [+1, -1, 0],
+          [-1, -1, 0],
+        ])!,
+        colors: [white, white, white],
+      },
+    ],
+    texture: imageDataToBitmap(await loadImage("./textures/crate.jpeg"))
+  };
+
   const objects: Obj[] = [
     {
       transform: {
         translation: [0, 0, 0],
         scale: [1, 1, 1],
-        rotation: [0, -120, 0],
+        rotation: [0, 0, 0],
       },
-      model: await loadModel("./models/cube.obj", "./textures/crate.jpeg"),
+      // model: await loadModel("./models/cube.obj", "./textures/crate.jpeg"),
+      model: textureTestModel,
     }
   ];
 
@@ -131,7 +174,7 @@ async function start() {
 
   setupEvents(cam, scene, moveSens, rotateSens);
 
-  cube = await loadModel("./models/cube.obj");
+  lightGizmo = await loadModel("./models/cube.obj");
 
   update();
 }
@@ -193,7 +236,7 @@ function render(dt: number) {
 
     objs.push({
       model: {
-        tris: cube.tris.map((t) => ({
+        tris: lightGizmo.tris.map((t) => ({
           ...t,
           colors: [light.color, light.color, light.color]
         }))
@@ -284,6 +327,7 @@ function render(dt: number) {
 
     const projectedTris = illuminatedTris.map((tri) => ({
       color: tri.colors,
+      textureCoords: tri.textureCoords,
       unprojectedVerts: tri.verts,
       projectedVerts: tri.verts.map((v) => project(imageData, v)),
     }));
@@ -296,9 +340,10 @@ function render(dt: number) {
           t.projectedVerts[0],
           t.projectedVerts[1],
           t.projectedVerts[2],
-          {z: t.unprojectedVerts[0][2], color: t.color[0]},
-          {z: t.unprojectedVerts[1][2], color: t.color[1]},
-          {z: t.unprojectedVerts[2][2], color: t.color[2]},
+          {z: t.unprojectedVerts[0][2], color: t.color[0], textureCoord: t.textureCoords?.[0] },
+          {z: t.unprojectedVerts[1][2], color: t.color[1], textureCoord: t.textureCoords?.[1] },
+          {z: t.unprojectedVerts[2][2], color: t.color[2], textureCoord: t.textureCoords?.[2] },
+          obj.model.texture,
         );
       });
     }
