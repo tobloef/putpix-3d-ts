@@ -120,14 +120,6 @@ async function start() {
         scale: [1, 1, 1],
         rotation: [0, -120, 0],
       },
-      model: await loadModel("./models/rat.obj"),
-    },
-    {
-      transform: {
-        translation: [0, 0, 0],
-        scale: [1, 1, 1],
-        rotation: [0, -120, 0],
-      },
       model: await loadModel("./models/cube.obj", "./textures/crate.jpeg"),
     }
   ];
@@ -178,7 +170,7 @@ let cam: Transform = {
   scale: [1, 1, 1],
 }
 
-function render(_dt: number) {
+function render(dt: number) {
   if (scene == null) {
     return;
   }
@@ -192,7 +184,7 @@ function render(_dt: number) {
 
     light.position = rotateByCamera(
       {
-      rotation: [0, 2, 0],
+      rotation: [0, 50 * dt, 0],
       scale: [1, 1, 1],
       translation: [0, 0, 0]
       },
