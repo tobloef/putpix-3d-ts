@@ -132,7 +132,7 @@ export function drawFilledTriangle(
           proportions,
         );
         const xPixelIndex = Math.round(textureCoordinates[0] * (texture.width - 1));
-        const yPixelIndex = Math.round(textureCoordinates[1] * (texture.height - 1));
+        const yPixelIndex = Math.round((1 - textureCoordinates[1]) * (texture.height - 1));
 
         color = vecMultVec(texture.pixels[xPixelIndex][yPixelIndex], vecDiv(color, 255));
       }

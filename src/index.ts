@@ -86,7 +86,7 @@ async function start() {
   const lights: Light[] = [
     {
       type: "ambient",
-      intensity: 0.1,
+      intensity: 0.5,
       color: white,
     },
     {
@@ -118,22 +118,17 @@ async function start() {
   const objects: Obj[] = [
     {
       transform: {
-        translation: [0, 2, 0],
+        translation: [0, 0, 0],
         scale: [1, 1, 1],
         rotation: [0, 0, 0],
       },
-      model: await loadModel("./models/rat.obj", undefined, { calculateOwnNormals: true }),
+      model: await loadModel(
+        "./models/cube.obj",
+        "./textures/crate-map.png",
+        { calculateOwnNormals: true },
+      ),
       // model: textureTestModel,
     },
-    {
-      transform: {
-        translation: [0, -2, 0],
-        scale: [1, 1, 1],
-        rotation: [0, 0, 0],
-      },
-      model: await loadModel("./models/rat.obj"),
-      // model: textureTestModel,
-    }
   ];
 
   scene = {
