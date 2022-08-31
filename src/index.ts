@@ -184,7 +184,16 @@ async function start() {
   const objects: Obj[] = [
     {
       transform: {
-        translation: [0, 0, 0],
+        translation: [0, 2, 0],
+        scale: [1, 1, 1],
+        rotation: [0, 0, 0],
+      },
+      model: await loadModel("./models/rat.obj", undefined, { calculateOwnNormals: true }),
+      // model: textureTestModel,
+    },
+    {
+      transform: {
+        translation: [0, -2, 0],
         scale: [1, 1, 1],
         rotation: [0, 0, 0],
       },
