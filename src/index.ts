@@ -7,7 +7,10 @@ import type {
   Tri,
   Vector3,
 } from "./types";
-import { Obj } from "./types";
+import {
+  Obj,
+  ThreeVector3,
+} from "./types";
 import {
   blue,
   green,
@@ -31,14 +34,13 @@ import {
 import { project } from "./projection";
 import { clipTris } from "./clip";
 import {
+  rotate,
   rotateByCamera,
   transform,
   transformByCamera,
   translateByCamera,
 } from "./transform";
-import {
-  parseObjFileToTris,
-} from "./obj";
+import { parseObjFileToTris } from "./obj";
 import loadFile from "./loadFile";
 import {
   calculateIllumination,
@@ -90,7 +92,7 @@ async function start() {
     {
       type: "directional",
       intensity: 0,
-      direction: vecNorm([0, 0, 1]),
+      direction: vecNorm([1, 0, 0]),
       color: white,
     },
     {
@@ -126,11 +128,23 @@ async function start() {
           [1, 1],
           [0, 0],
         ],
-        normal: calculateTriNormal([
-          [-1, +1, 0],
-          [+1, +1, 0],
-          [-1, -1, 0],
-        ])!,
+        normals: [
+          calculateTriNormal([
+            [-1, +1, 0],
+            [+1, +1, 0],
+            [-1, -1, 0],
+          ])!,
+          calculateTriNormal([
+            [-1, +1, 0],
+            [+1, +1, 0],
+            [-1, -1, 0],
+          ])!,
+          calculateTriNormal([
+            [-1, +1, 0],
+            [+1, +1, 0],
+            [-1, -1, 0],
+          ])!,
+        ],
         colors: [white, white, white],
       },
       {
@@ -144,11 +158,23 @@ async function start() {
           [1, 0],
           [0, 0],
         ],
-        normal: calculateTriNormal([
-          [+1, +1, 0],
-          [+1, -1, 0],
-          [-1, -1, 0],
-        ])!,
+        normals: [
+          calculateTriNormal([
+            [+1, +1, 0],
+            [+1, -1, 0],
+            [-1, -1, 0],
+          ])!,
+          calculateTriNormal([
+            [+1, +1, 0],
+            [+1, -1, 0],
+            [-1, -1, 0],
+          ])!,
+          calculateTriNormal([
+            [+1, +1, 0],
+            [+1, -1, 0],
+            [-1, -1, 0],
+          ])!,
+        ],
         colors: [white, white, white],
       },
     ],
@@ -162,8 +188,8 @@ async function start() {
         scale: [1, 1, 1],
         rotation: [0, 0, 0],
       },
-      // model: await loadModel("./models/cube.obj", "./textures/crate.jpeg"),
-      model: textureTestModel,
+      model: await loadModel("./models/rat.obj"),
+      // model: textureTestModel,
     }
   ];
 
@@ -175,13 +201,20 @@ async function start() {
   setupEvents(cam, scene, moveSens, rotateSens);
 
   lightGizmo = await loadModel("./models/cube.obj");
+  lightGizmo.unlit = true;
 
   update();
 }
 
-async function loadModel(objSrc: string, textureSrc?: string): Promise<Model> {
+async function loadModel(
+  objSrc: string,
+  textureSrc?: string,
+  options?: Partial<{
+    calculateOwnNormals: boolean
+  }>,
+): Promise<Model> {
   return {
-    tris: parseObjFileToTris(await loadFile(objSrc)),
+    tris: parseObjFileToTris(await loadFile(objSrc), options),
     texture: textureSrc != null
       ? imageDataToBitmap(await loadImage(textureSrc))
       : undefined,
@@ -236,6 +269,7 @@ function render(dt: number) {
 
     objs.push({
       model: {
+        ...lightGizmo,
         tris: lightGizmo.tris.map((t) => ({
           ...t,
           colors: [light.color, light.color, light.color]
@@ -261,11 +295,12 @@ function render(dt: number) {
           direction: transformedDirection,
         };
       case "point":
-        const transformedPosition = translateByCamera(cam, light.position);
+        const translated = translateByCamera(cam, light.position);
+        const rotated = rotateByCamera(cam, translated);
 
         return {
           ...light,
-          position: transformedPosition,
+          position: rotated,
         }
     }
   });
@@ -278,31 +313,41 @@ function render(dt: number) {
     const originalTris = obj.model.tris;
 
     const transformedTris: Tri[] = originalTris.map((t): Tri | null => {
-      const newVerts = t.verts.map((v): Vector3 => {
-        const transformed = transform(v, obj.transform);
-        const camTransformed = transformByCamera(cam, transformed);
+      const newVerts = t.verts.map((v: Vector3): Vector3 => {
+        const objTransformed = transform(v, obj.transform);
+        const camTransformed = transformByCamera(cam, objTransformed);
         return camTransformed;
-      }) as [Vector3, Vector3, Vector3];
+      }) as ThreeVector3;
 
-      const normal = calculateTriNormal(newVerts);
-
-      if (normal === null) {
-        return null;
-      }
+      const newNormals = t.normals.map((v: Vector3): Vector3 => {
+        const objRotated = rotate(v, obj.transform.rotation);
+        const camRotated = rotateByCamera(cam, objRotated);
+        return camRotated;
+      }) as ThreeVector3;
 
       return ({
         ...t,
         verts: newVerts,
-        normal,
+        normals: newNormals,
       });
     }).filter((t): t is Tri => t != null);
 
     const clippedTris = clipTris(transformedTris);
 
     const illuminatedTris: Tri[] = clippedTris.map((t) => {
+      if (obj.model.unlit) {
+        return t;
+      }
+
       if (VERTEX_LIGHTING) {
-        const illuminations = t.verts.map((v) => calculateIllumination(
-          v, t.normal, transformedLights,
+        const normal = calculateTriNormal(t.verts);
+
+        if (normal === null) {
+          return t;
+        }
+
+        const illuminations = t.verts.map((v, i) => calculateIllumination(
+          v, t.normals[i], transformedLights,
         ));
 
         return {
@@ -311,12 +356,13 @@ function render(dt: number) {
         }
       } else {
         const center = calculateVertsCenter(t.verts);
+        const normal = calculateTriNormal(t.verts);
 
-        if (t.normal === null) {
+        if (normal === null) {
           return t;
         }
 
-        const illumination = calculateIllumination(center, t.normal, transformedLights);
+        const illumination = calculateIllumination(center, normal, transformedLights);
 
         return {
           ...t,

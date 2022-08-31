@@ -11,7 +11,11 @@ import {
   interpolate,
   interpolateVector,
   isPointInTriangle,
+  vecAdd,
   vecClamp,
+  vecDiv,
+  vecMult,
+  vecMultVec,
 } from "./math";
 import { Bitmap } from "./images";
 
@@ -111,7 +115,12 @@ export function drawFilledTriangle(
         continue;
       }
 
-      let color: Vector3;
+      let color = getProportionallyInterpolatedVector3(
+        vertAtrr1.color,
+        vertAtrr2.color,
+        vertAtrr3.color,
+        proportions,
+      );
 
       if (
         texture != null &&
@@ -128,16 +137,8 @@ export function drawFilledTriangle(
         const xPixelIndex = Math.round(textureCoordinates[0] * (texture.width - 1));
         const yPixelIndex = Math.round(textureCoordinates[1] * (texture.height - 1));
 
-        color = texture.pixels[xPixelIndex][yPixelIndex];
-      } else {
-        color = getProportionallyInterpolatedVector3(
-          vertAtrr1.color,
-          vertAtrr2.color,
-          vertAtrr3.color,
-          proportions,
-        );
+        color = vecMultVec(texture.pixels[xPixelIndex][yPixelIndex], vecDiv(color, 255));
       }
-
 
 
       const z = getProportionallyInterpolatedNumber(
