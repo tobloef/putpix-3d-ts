@@ -37,6 +37,8 @@ export type Light = (
   | PointLight
 );
 
+// Notice: If you have a bowl with a light on the side, under the rim, the light will still hit the inside of the bowl
+
 export function calculateIllumination(
   point: Vector3,
   normal: Vector3,

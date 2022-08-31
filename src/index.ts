@@ -91,41 +91,23 @@ async function start() {
     },
     {
       type: "directional",
-      intensity: 0,
-      direction: vecNorm([1, 0, 0]),
+      intensity: 1,
+      direction: vecNorm([-1, -1, -1]),
       color: white,
     },
-    {
-      type: "point",
-      intensity: 20,
-      position: [0, 1, 5],
-      color: red,
-    },
-    {
-      type: "point",
-      intensity: 20,
-      position: [-4.33, 1, -2.5],
-      color: green,
-    },
-    {
-      type: "point",
-      intensity: 20,
-      position: [4.33, 1, -2.5],
-      color: blue,
-    },
+
   ];
 
   const objects: Obj[] = [
     {
       transform: {
-        translation: [0, 0, 0],
-        scale: [1, 1, 1],
+        translation: [0, -2, 0],
+        scale: [0.3, 0.3, 0.3],
         rotation: [0, 0, 0],
       },
       model: await loadModel(
-        "./models/cube.obj",
-        "./textures/crate-map.png",
-        { calculateOwnNormals: true },
+        "./models/cockle.obj",
+        "./textures/cockle.jpg",
       ),
       // model: textureTestModel,
     },
