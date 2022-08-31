@@ -55,11 +55,11 @@ export function calculateIllumination(
       intensity = light.intensity * factorAtAngle;
 
     } else if (light.type === "point") {
+      // Notice the easy optimization we could do here!
+      // Distance includes a square root, which we then negate here
       const dist = distance(light.position, point);
       const factorAtDistance = 1 / Math.pow(dist, 2);
       const intensityAtDistance = light.intensity * factorAtDistance;
-      // Notice the easy optimization we could do here!
-      // Distance includes a square root, which we then negate here
       const direction = vecNorm(vecSub(point, light.position));
       const factorAtAngle = Math.max(0, -vecDot(direction, normal));
       intensity = intensityAtDistance * factorAtAngle;
