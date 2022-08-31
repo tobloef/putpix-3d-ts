@@ -11,10 +11,7 @@ import {
   interpolate,
   interpolateVector,
   isPointInTriangle,
-  vecAdd,
-  vecClamp,
   vecDiv,
-  vecMult,
   vecMultVec,
 } from "./math";
 import { Bitmap } from "./images";

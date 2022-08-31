@@ -98,7 +98,7 @@ export function clipTris(tris: Tri[]): Tri[] {
         newTris.push({
           verts: newVerts1,
           colors: newColors1,
-          normal: normal1,
+          normals: [normal1, normal1, normal1],
         });
       }
 
@@ -107,7 +107,7 @@ export function clipTris(tris: Tri[]): Tri[] {
         newTris.push({
           verts: newVerts2,
           colors: newColors2,
-          normal: normal2,
+          normals: [normal2, normal2, normal2],
         });
       }
 
@@ -162,7 +162,7 @@ export function clipTris(tris: Tri[]): Tri[] {
         newTris.push({
           verts: newVerts,
           colors: newColors,
-          normal,
+          normals: [normal, normal, normal],
         });
       }
 
