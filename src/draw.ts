@@ -11,6 +11,7 @@ import {
   interpolate,
   interpolateVector,
   isPointInTriangle,
+  vecClamp,
   vecDiv,
   vecMultVec,
 } from "./math";
@@ -112,6 +113,14 @@ export function drawFilledTriangle(
         continue;
       }
 
+      const z = getProportionallyInterpolatedNumber(
+        vertAtrr1.z,
+        vertAtrr2.z,
+        vertAtrr3.z,
+        proportions,
+      );
+      const zFrac = 1 / z;
+
       let color = getProportionallyInterpolatedVector3(
         vertAtrr1.color,
         vertAtrr2.color,
@@ -125,27 +134,27 @@ export function drawFilledTriangle(
         vertAtrr2.textureCoord != null &&
         vertAtrr3.textureCoord != null
       ) {
+        const t1 = vertAtrr1.textureCoord;
+        const t2 = vertAtrr2.textureCoord;
+        const t3 = vertAtrr3.textureCoord;
+
         const textureCoordinates = getProportionallyInterpolatedVector2(
-          vertAtrr1.textureCoord,
-          vertAtrr2.textureCoord,
-          vertAtrr3.textureCoord,
+          t1,
+          t2,
+          t3,
           proportions,
         );
-        const xPixelIndex = Math.round(textureCoordinates[0] * (texture.width - 1));
-        const yPixelIndex = Math.round((1 - textureCoordinates[1]) * (texture.height - 1));
+
+        const newTextureCoordinates = textureCoordinates;
+
+        const clampedTextureCoordinates = vecClamp(newTextureCoordinates, 0, 1);
+
+        const xPixelIndex = Math.round(clampedTextureCoordinates[0] * (texture.width - 1));
+        const yPixelIndex = Math.round((1 - clampedTextureCoordinates[1]) * (texture.height - 1));
 
         color = vecMultVec(texture.pixels[xPixelIndex][yPixelIndex], vecDiv(color, 255));
       }
 
-
-      const z = getProportionallyInterpolatedNumber(
-        vertAtrr1.z,
-        vertAtrr2.z,
-        vertAtrr3.z,
-        proportions,
-      );
-
-      const zFrac = 1 / z;
       const zBuffIndex = x + y * imageData.width;
 
       if (zFrac > zBuffer[zBuffIndex]) {

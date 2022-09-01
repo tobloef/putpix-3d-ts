@@ -64,7 +64,7 @@ const ctx = canvas.getContext("2d")!;
 
 const rect = ctx.canvas.getBoundingClientRect();
 const dpr = window.devicePixelRatio ?? 1;
-const renderScale = 1 / 1;
+const renderScale = 1 / 3;
 canvas.width = Math.round(rect.width * dpr * renderScale);
 canvas.height = Math.round(rect.height * dpr * renderScale);
 ctx.scale(dpr, dpr);
@@ -98,13 +98,13 @@ async function start() {
   const objects: Obj[] = [
     {
       transform: {
-        translation: [0, -2, 0],
-        scale: [0.3, 0.3, 0.3],
-        rotation: [0, 0, 0],
+        translation: [0, 2, -5],
+        scale: [1, 1, 1],
+        rotation: [0, 50, 0],
       },
       model: await loadModel(
-        "./models/cockle.obj",
-        "./textures/cockle.jpg",
+        "./models/cube.obj",
+        "./textures/crate.png",
       ),
     },
   ];
