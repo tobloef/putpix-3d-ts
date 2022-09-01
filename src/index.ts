@@ -12,9 +12,6 @@ import {
   ThreeVector3,
 } from "./types";
 import {
-  blue,
-  green,
-  red,
   white,
 } from "./colors";
 import {
@@ -67,7 +64,7 @@ const ctx = canvas.getContext("2d")!;
 
 const rect = ctx.canvas.getBoundingClientRect();
 const dpr = window.devicePixelRatio ?? 1;
-const renderScale = 1 / 2;
+const renderScale = 1 / 1;
 canvas.width = Math.round(rect.width * dpr * renderScale);
 canvas.height = Math.round(rect.height * dpr * renderScale);
 ctx.scale(dpr, dpr);
@@ -92,7 +89,7 @@ async function start() {
     {
       type: "directional",
       intensity: 1,
-      direction: vecNorm([-1, -1, -1]),
+      direction: vecNorm([1, -1, 0]),
       color: white,
     },
 
@@ -109,7 +106,6 @@ async function start() {
         "./models/cockle.obj",
         "./textures/cockle.jpg",
       ),
-      // model: textureTestModel,
     },
   ];
 
