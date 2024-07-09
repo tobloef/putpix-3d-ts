@@ -1,6 +1,6 @@
 ![Putpix 3D Banner](https://github.com/tobloef/putpix-3d-ts/assets/12204005/5ae8943b-46f6-4b72-8864-3a33d513913c)
 
-### 3D software rasterizer written in TypeScript
+### 3D software rasterizer written in TypeScript 🟦
 
 ## Goals
 
