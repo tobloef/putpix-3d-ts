@@ -5,7 +5,7 @@
 ## Goals
 
 * This project follows my [Wheel Reinventor's Principles](https://github.com/tobloef/wheel-reinventors-principles): In short, it's made from scratch for learning and to tailor it to my specific use cases.
-* Learn the maths behind 3D projection and simple lighting.
+* Learn the maths behind 3D projection and simple point lights.
 * Write an OBJ parser to load 3D models.
 * No graphics library or GPU usage. Just drawing one pixel at a time. Performance is a non-goal!
 
